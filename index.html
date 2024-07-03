@@ -7,16 +7,376 @@
     <style>
       body {
         margin: 0;
-        background-color: #f1f2da;
+        background-color: #29adff;
       }
     </style>
   </head>
   <body>
     <script>
+      // Globales
+      const WORLD_WIDTH = 2920
+      const WORLD_HEIGHT = 540
+      const PLAYER_VELOCITY = 240
+      const PLAYER_BOUNCE_OFF_VELOCITY = 200
+      const PLAYER_MIN_JUMP_VELOCITY = -400
+      const PLAYER_MAX_JUMP_VELOCITY = -500
+      const PLAYER_MAX_JUMP_TIME = 150
+      const ENEMY_VELOCITY = 140
+
+      class IntroScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'intro' })
+        }
+
+        create() {
+          const text = this.add
+            .text(480, 460, `Appuie sur la touche 'ESPACE' pour commencer`, {
+              fontSize: '24px',
+              fill: '#1d2b53',
+            })
+            .setOrigin(0.5, 0.5)
+
+          this.tweens.add({
+            targets: text,
+            duration: 1000,
+            alpha: 0,
+            repeat: -1,
+            yoyo: true,
+          })
+
+          this.add
+            .text(480, 200, 'BOBBY', {
+              fontSize: '128px',
+              fill: '#1d2b53',
+            })
+            .setOrigin(0.5, 0.5)
+
+          this.add
+            .text(480, 280, 'Titre à définir...', {
+              fontSize: '24px',
+              fill: '#1d2b53',
+            })
+            .setOrigin(0.5, 0.5)
+
+          this.input.keyboard.on('keydown-SPACE', () => {
+            this.scene.start('game')
+          })
+        }
+      }
+
+      class GameScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'game' })
+        }
+
+        preload() {
+          // Générer une texture de carré blanc pour les particules
+          const graphics = this.make.graphics()
+          graphics.fillStyle(0x000000, 1)
+          graphics.fillRect(0, 0, 10, 10)
+          graphics.generateTexture('particle', 10, 10)
+          graphics.clear()
+
+          // Texture de triangle pour les pics
+          graphics.fillStyle(0xc2c3c7, 1)
+          graphics.beginPath()
+          graphics.moveTo(0, 40)
+          graphics.lineTo(20, 0)
+          graphics.lineTo(40, 40)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('spike', 40, 40)
+          graphics.clear()
+
+          // Texture pour les nuages
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillCircle(30, 30, 30)
+          graphics.fillCircle(50, 50, 30)
+          graphics.fillCircle(70, 30, 30)
+          graphics.fillCircle(90, 50, 30)
+          graphics.fillCircle(120, 30, 30)
+          graphics.generateTexture('cloud', 150, 120)
+          graphics.clear()
+
+          // Texture pour les collines
+          graphics.fillStyle(0x008751, 1)
+          graphics.beginPath()
+          graphics.moveTo(0, 400)
+          graphics.lineTo(200, 0)
+          graphics.lineTo(400, 400)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('hill', 400, 400)
+          graphics.clear()
+
+          graphics.fillStyle(0x5f574f, 1)
+          graphics.beginPath()
+          graphics.moveTo(0, 160)
+          graphics.lineTo(80, 0)
+          graphics.lineTo(160, 160)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('hill2', 160, 160)
+          graphics.destroy()
+        }
+
+        create() {
+          this.isOver = false
+          this.worldWidth = WORLD_WIDTH
+          this.worldHeight = WORLD_HEIGHT
+          this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+
+          const hillsPos = [
+            { x: 200, y: 200 },
+            { x: 360, y: 240 },
+            { x: 800, y: 240 },
+            { x: 1000, y: 200 },
+            { x: 1600, y: 200 },
+          ]
+          this.hills = this.add.group()
+          for (let i = 0; i < hillsPos.length; i++) {
+            let hill = this.hills.create(hillsPos[i].x, hillsPos[i].y, 'hill')
+            hill.setOrigin(0)
+            hill.setScrollFactor(0.3)
+          }
+
+          const hillsPos2 = [
+            { x: 10, y: 340 },
+            { x: 700, y: 380 },
+            { x: 800, y: 420 },
+            { x: 1300, y: 380 },
+            { x: 1600, y: 420 },
+          ]
+          this.hills2 = this.add.group()
+          for (let i = 0; i < hillsPos2.length; i++) {
+            let hill = this.hills2.create(hillsPos2[i].x, hillsPos2[i].y, 'hill2')
+            hill.setOrigin(0)
+            hill.setScrollFactor(0.4)
+          }
+
+          // Création des nuages
+          const cloudsPos = [-100, 400, 900, 1440, 1600, 2000]
+          this.clouds = this.physics.add.group({
+            allowGravity: false,
+          })
+          for (let i = 0; i < cloudsPos.length; i++) {
+            let cloud = this.clouds.create(cloudsPos[i], Phaser.Math.Between(60, 180), 'cloud')
+            cloud.setVelocityX(Phaser.Math.Between(10, 20))
+            cloud.setAlpha(Phaser.Math.FloatBetween(0.2, 0.8))
+          }
+
+          // Créer un groupe statique pour les plateformes
+          const platforms = this.physics.add.staticGroup()
+
+          // Créer le sol et les plateformes
+          this.addPlatform(this, platforms, 0, 500, 800, 40)
+          this.addPlatform(this, platforms, 400, 460, 400, 40)
+          this.addPlatform(this, platforms, 920, 500, 2000, 40)
+          this.addPlatform(this, platforms, 920, 460, 240, 40)
+          this.addPlatform(this, platforms, 1800, 460, 80, 40)
+          this.addPlatform(this, platforms, 1840, 420, 40, 40)
+          this.addPlatform(this, platforms, 2300, 460, 80, 40)
+          this.addPlatform(this, platforms, 2300, 420, 40, 40)
+
+          // Créer les plateformes supplémentaires
+          this.addPlatform(this, platforms, 2580, 380, 120, 40)
+          this.addPlatform(this, platforms, 2800, 280, 120, 40)
+
+          // Créer le téléporteur et les particules
+          const particles = this.add.particles(2860, 240, 'particle', {
+            speed: {
+              min: -100,
+              max: 100,
+            },
+            angle: {
+              min: 0,
+              max: 360,
+            },
+            scale: {
+              start: 1,
+              end: 0,
+            },
+            lifespan: 1000,
+            frequency: 100,
+            quantity: 5,
+          })
+          const target = this.add.circle(2860, 240, 20, 0x1d2b53)
+          this.physics.add.existing(target, true)
+
+          // Pics
+          const spikes = this.physics.add.staticGroup()
+          const spike1 = this.add.sprite(1560, 480, 'spike')
+          this.physics.add.existing(spike1, true)
+          spikes.add(spike1)
+
+          const spike2 = this.add.sprite(1340, 480, 'spike')
+          this.physics.add.existing(spike2, true)
+          spikes.add(spike2)
+
+          const spike3 = this.add.sprite(1380, 480, 'spike')
+          this.physics.add.existing(spike3, true)
+          spikes.add(spike3)
+
+          // Ennemis
+          this.enemies = this.physics.add.group()
+          const enemy = this.add.rectangle(2000, 500, 40, 40, 0xff004d)
+          enemy.setOrigin(0.5, 1)
+          enemy.setData('dir', 1)
+          this.physics.add.existing(enemy)
+          this.enemies.add(enemy)
+
+          // Créer le joueur
+          this.player = this.add.rectangle(60, 320, 40, 40, 0xfff1e8)
+          this.player.setOrigin(0.5, 1)
+          this.physics.add.existing(this.player)
+
+          // Ajouter la collision entre le joueur, les ennemis et le sol
+          this.physics.add.collider(this.player, platforms)
+          this.physics.add.collider(this.enemies, platforms)
+
+          // Detection de fin de jeu
+          this.physics.add.overlap(this.player, target, this.win, undefined, this)
+
+          // Mort du joueur
+          this.physics.add.overlap(this.player, spikes, this.lose, undefined, this)
+          this.physics.add.collider(this.enemies, this.player, this.handleEnemiesCollision, undefined, this)
+
+          // Suivi de la caméra
+          this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+          this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+
+          // Créer les contrôles
+          this.cursors = this.input.keyboard.createCursorKeys()
+          this.input.keyboard.on('keydown-UP', this.jump, this)
+          this.input.keyboard.on(
+            'keyup-UP',
+            () => {
+              this.isUpKeyPressed = false
+            },
+            this
+          )
+
+          this.input.keyboard.on('keydown-SPACE', this.restart, this)
+
+          // Texte de fin de jeu
+          this.winPanel = this.add.container(480, 270).setAlpha(0).setScrollFactor(0)
+          const bgPanel = this.add.rectangle(0, 0, 600, 300, 0xc2c3c7).setOrigin(0.5)
+          this.winPanel.add(bgPanel)
+
+          const winText = this.add
+            .text(0, 0, 'VICTOIRE !', {
+              fontSize: '64px',
+              fill: '#1d2b53',
+            })
+            .setOrigin(0.5)
+
+          this.winPanel.add(winText)
+
+          // Limite horizontale du monde
+          this.events.on('postupdate', () => {
+            const playerHalfWidth = this.player.body.width / 2
+            if (this.player.x - playerHalfWidth < 0) {
+              this.player.x = playerHalfWidth
+            } else if (this.player.x + playerHalfWidth > this.physics.world.bounds.width) {
+              this.player.x = this.physics.world.bounds.width - playerHalfWidth
+            }
+          })
+        }
+
+        update(time, delta) {
+          // Mouvement des ennemis
+          this.enemies.getChildren().forEach((enemy) => {
+            let dir = enemy.getData('dir')
+            if (enemy.body.touching.right) {
+              dir = -1
+            } else if (enemy.body.touching.left) {
+              dir = 1
+            }
+            enemy.setData('dir', dir)
+            enemy.body.setVelocityX(ENEMY_VELOCITY * dir)
+          })
+
+          // Reset des nuages
+          this.clouds.children.iterate((cloud) => {
+            if (cloud.x > this.physics.world.bounds.width) {
+              cloud.x = -120
+            }
+          })
+
+          if (this.isOver) return
+
+          // Réinitialiser la vitesse horizontale du joueur
+          this.player.body.setVelocityX(0)
+
+          // Gérer les mouvements à gauche et à droite
+          if (this.cursors.left.isDown) {
+            this.player.body.setVelocityX(-PLAYER_VELOCITY)
+          } else if (this.cursors.right.isDown) {
+            this.player.body.setVelocityX(PLAYER_VELOCITY)
+          }
+
+          // Gérer le saut progressif
+          if (this.isUpKeyPressed) {
+            const pressDuration = time - this.jumpStartTime
+            if (pressDuration > PLAYER_MAX_JUMP_TIME) {
+              this.isUpKeyPressed = false
+            }
+
+            const t = pressDuration / PLAYER_MAX_JUMP_TIME
+            const jumpVelocity =
+              PLAYER_MIN_JUMP_VELOCITY + (PLAYER_MAX_JUMP_VELOCITY - PLAYER_MIN_JUMP_VELOCITY) * Math.pow(t, 2)
+            this.player.body.setVelocityY(jumpVelocity)
+          }
+
+          // Sortie du monde
+          if (this.player.y - this.player.body.height / 2 > this.physics.world.bounds.height) {
+            this.lose.call(this)
+          }
+        }
+
+        jump() {
+          if (!this.player.body.blocked.down) return
+          this.isUpKeyPressed = true
+          this.jumpStartTime = this.time.now
+        }
+
+        win() {
+          this.isOver = true
+          this.player.body.setVelocity(0, 0)
+          this.player.body.allowGravity = false
+          this.player.body.immovable = true
+          this.winPanel.setAlpha(1)
+        }
+
+        restart() {
+          if (!this.isOver) return
+          this.scene.restart()
+        }
+
+        lose() {
+          this.scene.restart()
+        }
+
+        addPlatform(scene, group, x, y, width, height) {
+          const platform = scene.add.rectangle(x, y, width, height, 0xab5236)
+          platform.setOrigin(0)
+          group.add(platform)
+        }
+
+        handleEnemiesCollision(player, enemy) {
+          if (player.body.touching.down && enemy.body.touching.up) {
+            enemy.destroy()
+            player.body.setVelocityY(-PLAYER_BOUNCE_OFF_VELOCITY)
+          } else {
+            this.lose.call(this)
+          }
+        }
+      }
+
       // Configuration globale de Phaser
       const config = {
         type: Phaser.AUTO,
-        backgroundColor: '#f1f2da',
+        backgroundColor: '#29ADFF',
         scale: {
           mode: Phaser.Scale.FIT,
           autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -31,170 +391,10 @@
             },
           },
         },
-        scene: {
-          create: create,
-          update: update,
-          preload: preload,
-        },
+        scene: [IntroScene, GameScene],
       }
 
       const game = new Phaser.Game(config)
-
-      let player
-      let cursors
-      let winText
-      let jumpStartTime = 0
-      let isUpKeyPressed = false
-      const PLAYER_MIN_JUMP_VELOCITY = -400
-      const PLAYER_MAX_JUMP_VELOCITY = -500
-      const PLAYER_MAX_JUMP_TIME = 150
-
-      function preload() {
-        // Générer une texture de carré blanc pour les particules
-        const graphics = this.make.graphics()
-        graphics.fillStyle(0x00303b, 1)
-        graphics.fillRect(0, 0, 10, 10)
-        graphics.generateTexture('particle', 10, 10)
-        graphics.clear()
-
-        // Texture de triangle pour les pics
-        graphics.fillStyle(0xff7777, 1)
-        graphics.beginPath()
-        graphics.moveTo(0, 40)
-        graphics.lineTo(20, 0)
-        graphics.lineTo(40, 40)
-        graphics.closePath()
-        graphics.fillPath()
-        graphics.generateTexture('spike', 40, 40)
-        graphics.destroy()
-      }
-
-      function create() {
-        // Créer un groupe statique pour les plateformes
-        const platforms = this.physics.add.staticGroup()
-
-        // Créer le sol
-        const ground = this.add.rectangle(480, 520, 960, 40, 0xffce96)
-        this.physics.add.existing(ground, true)
-        platforms.add(ground)
-
-        // Créer les plateformes supplémentaires
-        const platform1 = this.add.rectangle(680, 400, 120, 40, 0xffce96)
-        this.physics.add.existing(platform1, true)
-        platforms.add(platform1)
-
-        const platform2 = this.add.rectangle(900, 300, 120, 40, 0xffce96)
-        this.physics.add.existing(platform2, true)
-        platforms.add(platform2)
-
-        // Créer le téléporteur et les particules
-        const particles = this.add.particles(900, 240, 'particle', {
-          speed: {
-            min: -100,
-            max: 100,
-          },
-          angle: {
-            min: 0,
-            max: 360,
-          },
-          scale: {
-            start: 1,
-            end: 0,
-          },
-          lifespan: 1000,
-          frequency: 100,
-          quantity: 5,
-        })
-        const target = this.add.circle(900, 240, 20, 0x00303b)
-        this.physics.add.existing(target, true)
-
-        // Pics
-        const spikes = this.physics.add.staticGroup()
-        const spike1 = this.add.sprite(200, 480, 'spike')
-        this.physics.add.existing(spike1, true)
-        spikes.add(spike1)
-
-        const spike2 = this.add.sprite(380, 480, 'spike')
-        this.physics.add.existing(spike2, true)
-        spikes.add(spike2)
-
-        const spike3 = this.add.sprite(420, 480, 'spike')
-        this.physics.add.existing(spike3, true)
-        spikes.add(spike3)
-
-        // Créer le joueur
-        player = this.add.rectangle(60, 320, 40, 40, 0x00303b)
-        this.physics.add.existing(player)
-        player.body.setCollideWorldBounds(true)
-
-        // Ajouter la collision entre le joueur et le sol
-        this.physics.add.collider(player, platforms)
-
-        // Detection de fin de jeu
-        this.physics.add.overlap(player, target, win, undefined, this)
-
-        // Mort du joueur
-        this.physics.add.overlap(player, spikes, lose, undefined, this)
-
-        // Créer les contrôles
-        cursors = this.input.keyboard.createCursorKeys()
-        this.input.keyboard.on('keydown-UP', jump, this)
-        this.input.keyboard.on(
-          'keyup-UP',
-          () => {
-            isUpKeyPressed = false
-          },
-          this
-        )
-
-        // Texte de fin de jeu
-        winText = this.add.text(480, 200, 'YOU WIN !', {
-          fontSize: '64px',
-          fill: '#00303b',
-        })
-        winText.setOrigin(0.5)
-        winText.setAlpha(0)
-      }
-
-      function update(time, delta) {
-        // Réinitialiser la vitesse horizontale du joueur
-        player.body.setVelocityX(0)
-
-        // Gérer les mouvements à gauche et à droite
-        if (cursors.left.isDown) {
-          player.body.setVelocityX(-240)
-        } else if (cursors.right.isDown) {
-          player.body.setVelocityX(240)
-        }
-
-        // Gérer le saut progressif
-        if (isUpKeyPressed) {
-          const pressDuration = time - jumpStartTime
-          if (pressDuration > PLAYER_MAX_JUMP_TIME) {
-            isUpKeyPressed = false
-          }
-
-          const t = pressDuration / PLAYER_MAX_JUMP_TIME
-          const jumpVelocity =
-            PLAYER_MIN_JUMP_VELOCITY + (PLAYER_MAX_JUMP_VELOCITY - PLAYER_MIN_JUMP_VELOCITY) * Math.pow(t, 2)
-          player.body.setVelocityY(jumpVelocity)
-        }
-      }
-
-      function jump() {
-        if (!player.body.blocked.down) return
-        isUpKeyPressed = true
-        jumpStartTime = this.time.now
-      }
-
-      function win() {
-        this.scene.pause()
-        winText.setAlpha(1)
-      }
-
-      function lose() {
-        this.scene.restart()
-      }
     </script>
   </body>
 </html>
