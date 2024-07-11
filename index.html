@@ -17,23 +17,67 @@
       const WORLD_WIDTH = 2920
       const WORLD_HEIGHT = 540
       const PLAYER_VELOCITY = 240
-      const PLAYER_BOUNCE_OFF_VELOCITY = 200
-      const PLAYER_MIN_JUMP_VELOCITY = -400
-      const PLAYER_MAX_JUMP_VELOCITY = -500
+      const PLAYER_BOUNCE_OFF_VELOCITY = 400
+      const PLAYER_MIN_JUMP_VELOCITY = -360
+      const PLAYER_MAX_JUMP_VELOCITY = -400
       const PLAYER_MAX_JUMP_TIME = 150
+      const PLAYER_BUFFERING_TIME = 200
+      const PLAYER_COYOTE_TIME = 200
+      const PLAYER_MAX_JUMPS = 2
+      const PLAYER_FALL_SQUASH_VELOCITY = 700
       const ENEMY_VELOCITY = 140
+
+      class HUDScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'hud' })
+        }
+
+        create() {
+          // Contrôles mobile
+          const graphics = this.make.graphics()
+          graphics.lineStyle(2, 0xffffff, 1)
+          graphics.strokeRect(0, 0, 100, 100)
+          graphics.fillStyle(0xffffff, 1)
+          graphics.beginPath()
+          graphics.moveTo(40, 40)
+          graphics.lineTo(40, 60)
+          graphics.lineTo(60, 50)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnRight', 100, 100)
+          graphics.clear()
+
+          graphics.lineStyle(2, 0xffffff, 1)
+          graphics.strokeRect(0, 0, 100, 100)
+          graphics.fillStyle(0xffffff, 1)
+          graphics.beginPath()
+          graphics.moveTo(60, 40)
+          graphics.lineTo(60, 60)
+          graphics.lineTo(40, 50)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnLeft', 100, 100)
+          graphics.destroy()
+
+          this.btnLeft = this.add.sprite(40, 420, 'btnLeft').setOrigin(0)
+          this.btnRight = this.add.sprite(160, 420, 'btnRight').setOrigin(0)
+        }
+      }
 
       class IntroScene extends Phaser.Scene {
         constructor() {
           super({ key: 'intro' })
+          this.playerWasStanding = false
         }
 
         create() {
           const text = this.add
-            .text(480, 460, `Appuie sur la touche 'ESPACE' pour commencer`, {
-              fontSize: '24px',
-              fill: '#1d2b53',
-            })
+            .text(
+              480,
+              460,
+              `${this.sys.game.device.os.desktop ? "Appuie sur la touche 'ESPACE'" : "Touche l'écran"} pour commencer`,
+              { fontSize: '24px', fill: '#1d2b53' }
+            )
             .setOrigin(0.5, 0.5)
 
           this.tweens.add({
@@ -58,9 +102,12 @@
             })
             .setOrigin(0.5, 0.5)
 
-          this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start('game')
-          })
+          this.input.keyboard.on('keydown-SPACE', this.startGame, this)
+          this.input.on('pointerdown', this.startGame, this)
+        }
+
+        startGame() {
+          this.scene.start('game')
         }
       }
 
@@ -75,6 +122,11 @@
           graphics.fillStyle(0x000000, 1)
           graphics.fillRect(0, 0, 10, 10)
           graphics.generateTexture('particle', 10, 10)
+          graphics.clear()
+
+          graphics.fillStyle(0xc2c3c7, 1)
+          graphics.fillCircle(10, 10, 10)
+          graphics.generateTexture('particleJump', 20, 20)
           graphics.clear()
 
           // Texture de triangle pour les pics
@@ -184,18 +236,9 @@
 
           // Créer le téléporteur et les particules
           const particles = this.add.particles(2860, 240, 'particle', {
-            speed: {
-              min: -100,
-              max: 100,
-            },
-            angle: {
-              min: 0,
-              max: 360,
-            },
-            scale: {
-              start: 1,
-              end: 0,
-            },
+            speed: { min: -100, max: 100 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 1, end: 0 },
             lifespan: 1000,
             frequency: 100,
             quantity: 5,
@@ -226,9 +269,30 @@
           this.enemies.add(enemy)
 
           // Créer le joueur
-          this.player = this.add.rectangle(60, 320, 40, 40, 0xfff1e8)
-          this.player.setOrigin(0.5, 1)
-          this.physics.add.existing(this.player)
+          this.player = this.add.container(320, 320)
+          this.playerSprite = this.add.rectangle(0, 0, 40, 40, 0xfff1e8)
+          this.player.add(this.playerSprite)
+          this.player.setSize(40, 40)
+          this.physics.world.enable(this.player)
+          this.jumpCount = PLAYER_MAX_JUMPS
+          this.playerDir = 1
+          this.prevVelocityY = 0
+
+          // Particules du joueur lors du saut
+          this.playerEmitter = this.add.particles(0, 0, 'particleJump', {
+            lifespan: 300,
+            speedX: {
+              min: -100,
+              max: 100,
+            },
+            speedY: 0,
+            scale: {
+              start: 1,
+              end: 0,
+            },
+            emitting: false,
+            quantity: 5,
+          })
 
           // Ajouter la collision entre le joueur, les ennemis et le sol
           this.physics.add.collider(this.player, platforms)
@@ -247,16 +311,22 @@
 
           // Créer les contrôles
           this.cursors = this.input.keyboard.createCursorKeys()
+          this.keys = this.input.keyboard.addKeys('Q,D')
           this.input.keyboard.on('keydown-UP', this.jump, this)
-          this.input.keyboard.on(
-            'keyup-UP',
-            () => {
-              this.isUpKeyPressed = false
-            },
-            this
-          )
+          this.input.keyboard.on('keydown-Z', this.jump, this)
+          this.input.keyboard.on('keydown-SPACE', this.handleSpace, this)
+          this.input.keyboard.on('keyup-UP', this.resetJump, this)
 
-          this.input.keyboard.on('keydown-SPACE', this.restart, this)
+          // Mobiles
+          if (!this.sys.game.device.os.desktop) {
+            // Pointers
+            this.input.on('pointerdown', this.handlePointerDown, this)
+            this.input.on('pointermove', this.handlePointerMove, this)
+            this.input.on('pointerup', this.resetPointers, this)
+
+            // HUD
+            this.scene.launch('hud')
+          }
 
           // Texte de fin de jeu
           this.winPanel = this.add.container(480, 270).setAlpha(0).setScrollFactor(0)
@@ -305,21 +375,60 @@
 
           if (this.isOver) return
 
+          if (this.player.body.velocity.y !== 0) {
+            this.prevVelocityY = this.player.body.velocity.y
+          }
+
           // Réinitialiser la vitesse horizontale du joueur
+          if (this.player.body.velocity.x !== 0) {
+            this.playerDir = Math.sign(this.player.body.velocity.x)
+          }
           this.player.body.setVelocityX(0)
 
           // Gérer les mouvements à gauche et à droite
-          if (this.cursors.left.isDown) {
+          if (this.cursors.left.isDown || this.keys.Q.isDown || this.touchLeft) {
             this.player.body.setVelocityX(-PLAYER_VELOCITY)
-          } else if (this.cursors.right.isDown) {
+          } else if (this.cursors.right.isDown || this.keys.D.isDown || this.touchRight) {
             this.player.body.setVelocityX(PLAYER_VELOCITY)
           }
 
+          // Détection de chute pour coyote time
+          if (this.playerWasStanding && !this.player.body.blocked.down) {
+            this.playerWasStanding = false
+            this.fallStartTime = this.time.now
+          } else if (!this.playerWasStanding && this.player.body.blocked.down) {
+            this.playerWasStanding = true
+            this.jumpCount = 0
+
+            if (this.prevVelocityY >= PLAYER_FALL_SQUASH_VELOCITY) {
+              this.completePlayerTweens()
+              this.playerEmitter.emitParticleAt(this.player.x, this.player.y + 24)
+              this.tweens.add({
+                targets: this.playerSprite,
+                scaleY: 0.6,
+                scaleX: 1.4,
+                y: 8,
+                duration: 150,
+                yoyo: true,
+                ease: 'Cubic.easeOut',
+              })
+            }
+          }
+
+          // Jump buffering
+          if (
+            this.isUpKeyPressed &&
+            this.player.body.blocked.down &&
+            time - this.jumpBufferingTime < PLAYER_BUFFERING_TIME
+          ) {
+            this.jump()
+          }
+
           // Gérer le saut progressif
-          if (this.isUpKeyPressed) {
+          if (this.isJumping && this.isUpKeyPressed) {
             const pressDuration = time - this.jumpStartTime
             if (pressDuration > PLAYER_MAX_JUMP_TIME) {
-              this.isUpKeyPressed = false
+              this.isJumping = false
             }
 
             const t = pressDuration / PLAYER_MAX_JUMP_TIME
@@ -334,10 +443,87 @@
           }
         }
 
+        handleSpace() {
+          if (!this.isOver) {
+            this.jump()
+          } else {
+            this.scene.restart()
+          }
+        }
+
+        handlePointerDown(pointer) {
+          if (this.isOver) {
+            return this.scene.restart()
+          }
+
+          // Saut lors du touch sur la zone droite de l'écran
+          if (pointer.x > 480) {
+            this.jump()
+          }
+
+          this.handlePointerMove(pointer)
+        }
+
+        handlePointerMove(pointer) {
+          if (pointer.x < 150) {
+            this.touchRight = false
+            this.touchLeft = true
+          } else if (pointer.x < 300) {
+            this.touchRight = true
+            this.touchLeft = false
+          }
+        }
+
+        resetPointers(pointer) {
+          if (pointer.x > 300) return
+          this.touchLeft = false
+          this.touchRight = false
+        }
+
+        resetJump() {
+          this.isUpKeyPressed = false
+          this.isJumping = false
+        }
+
         jump() {
-          if (!this.player.body.blocked.down) return
           this.isUpKeyPressed = true
-          this.jumpStartTime = this.time.now
+          if (
+            this.player.body.blocked.down ||
+            (!this.player.body.blocked.down &&
+              this.time.now - this.fallStartTime < PLAYER_COYOTE_TIME &&
+              this.jumpCount === 0) ||
+            (!this.player.body.blocked.down && this.jumpCount > 0 && this.jumpCount < PLAYER_MAX_JUMPS)
+          ) {
+            this.jumpCount++
+            this.isJumping = true
+            this.jumpStartTime = this.time.now
+            this.completePlayerTweens()
+
+            if (this.jumpCount === 1) {
+              this.tweens.add({
+                targets: this.playerSprite,
+                scaleY: 1.4,
+                scaleX: 0.6,
+                y: -8,
+                duration: 200,
+                yoyo: true,
+                ease: 'Cubic.easeOut',
+              })
+            } else {
+              this.playerEmitter.emitParticleAt(this.player.x, this.player.y + 24)
+              this.tweens.add({
+                targets: this.playerSprite,
+                angle: 360 * this.playerDir,
+                duration: 600,
+                ease: 'Cubic.easeOut',
+                onComplete: () => {
+                  this.player.angle = 0
+                },
+              })
+            }
+          } else {
+            this.jumpBufferingTime = this.time.now
+          }
         }
 
         win() {
@@ -349,7 +535,6 @@
         }
 
         restart() {
-          if (!this.isOver) return
           this.scene.restart()
         }
 
@@ -367,9 +552,21 @@
           if (player.body.touching.down && enemy.body.touching.up) {
             enemy.destroy()
             player.body.setVelocityY(-PLAYER_BOUNCE_OFF_VELOCITY)
+            this.jumpCount = 1
+            this.isJumping = true
+            this.jumpStartTime = this.time.now
+            this.isUpKeyPressed = false
+            this.playerWasStanding = true
           } else {
             this.lose.call(this)
           }
+        }
+
+        completePlayerTweens() {
+          this.tweens.killTweensOf(this.playerSprite)
+          this.playerSprite.setScale(1)
+          this.playerSprite.angle = 0
+          this.playerSprite.y = 0
         }
       }
 
@@ -391,7 +588,10 @@
             },
           },
         },
-        scene: [IntroScene, GameScene],
+        input: {
+          activePointers: 3,
+        },
+        scene: [IntroScene, GameScene, HUDScene],
       }
 
       const game = new Phaser.Game(config)
