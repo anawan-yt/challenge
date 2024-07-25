@@ -24,8 +24,72 @@
       const PLAYER_BUFFERING_TIME = 200
       const PLAYER_COYOTE_TIME = 200
       const PLAYER_MAX_JUMPS = 2
+      const PLAYER_DEATH_JUMP_X = 100
+      const PLAYER_DEATH_JUMP_Y = -600
       const PLAYER_FALL_SQUASH_VELOCITY = 700
       const ENEMY_VELOCITY = 140
+
+      const transitionEventsEmitter = new Phaser.Events.EventEmitter()
+
+      function stringifyTime(elapsed) {
+        const minutes = Math.floor(elapsed / 60000)
+        const seconds = Math.floor((elapsed % 60000) / 1000)
+        const centiseconds = Math.floor((elapsed % 1000) / 10)
+        return (
+          Phaser.Utils.String.Pad(minutes, 2, '0', 1) +
+          "'" +
+          Phaser.Utils.String.Pad(seconds, 2, '0', 1) +
+          '"' +
+          Phaser.Utils.String.Pad(centiseconds, 2, '0', 1)
+        )
+      }
+
+      class TransitionScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'transition' })
+        }
+
+        init(data) {
+          this.isOpen = data.isOpen ?? false
+        }
+
+        create() {
+          const { width, height } = this.scale
+
+          this.rect1 = this.add.rectangle(0, this.isOpen ? -height / 2 : 0, width, height / 2, 0x1d2b53)
+          this.rect1.setOrigin(0, 0)
+          this.rect2 = this.add.rectangle(0, this.isOpen ? height : height / 2, width, height / 2, 0x1d2b53)
+          this.rect2.setOrigin(0, 0)
+
+          transitionEventsEmitter.off('start', this.startTransition, this)
+          transitionEventsEmitter.on('start', this.startTransition, this)
+
+          this.startTransition()
+        }
+
+        startTransition() {
+          const { width, height } = this.scale
+
+          this.tweens.add({
+            targets: this.rect1,
+            y: this.isOpen ? 0 : -height / 2,
+            duration: 500,
+            ease: 'Cubic.Out',
+          })
+
+          this.tweens.add({
+            targets: this.rect2,
+            y: this.isOpen ? height / 2 : height,
+            duration: 500,
+            ease: 'Cubic.Out',
+            onComplete: () => {
+              transitionEventsEmitter.emit('end')
+            },
+          })
+
+          this.isOpen = !this.isOpen
+        }
+      }
 
       class HUDScene extends Phaser.Scene {
         constructor() {
@@ -33,44 +97,78 @@
         }
 
         create() {
-          // Contrôles mobile
-          const graphics = this.make.graphics()
-          graphics.lineStyle(2, 0xffffff, 1)
-          graphics.strokeRect(0, 0, 100, 100)
-          graphics.fillStyle(0xffffff, 1)
-          graphics.beginPath()
-          graphics.moveTo(40, 40)
-          graphics.lineTo(40, 60)
-          graphics.lineTo(60, 50)
-          graphics.closePath()
-          graphics.fillPath()
-          graphics.generateTexture('btnRight', 100, 100)
-          graphics.clear()
+          if (!this.sys.game.device.os.desktop) {
+            const graphics = this.make.graphics()
+            graphics.lineStyle(2, 0xffffff, 1)
+            graphics.strokeRect(0, 0, 100, 100)
+            graphics.fillStyle(0xffffff, 1)
+            graphics.beginPath()
+            graphics.moveTo(40, 40)
+            graphics.lineTo(40, 60)
+            graphics.lineTo(60, 50)
+            graphics.closePath()
+            graphics.fillPath()
+            graphics.generateTexture('btnRight', 100, 100)
+            graphics.clear()
 
-          graphics.lineStyle(2, 0xffffff, 1)
-          graphics.strokeRect(0, 0, 100, 100)
-          graphics.fillStyle(0xffffff, 1)
-          graphics.beginPath()
-          graphics.moveTo(60, 40)
-          graphics.lineTo(60, 60)
-          graphics.lineTo(40, 50)
-          graphics.closePath()
-          graphics.fillPath()
-          graphics.generateTexture('btnLeft', 100, 100)
-          graphics.destroy()
+            graphics.lineStyle(2, 0xffffff, 1)
+            graphics.strokeRect(0, 0, 100, 100)
+            graphics.fillStyle(0xffffff, 1)
+            graphics.beginPath()
+            graphics.moveTo(60, 40)
+            graphics.lineTo(60, 60)
+            graphics.lineTo(40, 50)
+            graphics.closePath()
+            graphics.fillPath()
+            graphics.generateTexture('btnLeft', 100, 100)
+            graphics.destroy()
 
-          this.btnLeft = this.add.sprite(40, 420, 'btnLeft').setOrigin(0)
-          this.btnRight = this.add.sprite(160, 420, 'btnRight').setOrigin(0)
+            this.btnLeft = this.add.sprite(40, 420, 'btnLeft').setOrigin(0)
+            this.btnRight = this.add.sprite(160, 420, 'btnRight').setOrigin(0)
+          }
+
+          this.timerStarted = false
+          this.startTime = 0
+          this.add.rectangle(0, 20, 160, 40, 0x1d2b53, 0.5).setOrigin(0)
+          this.timerText = this.add.text(20, 28, '00\'00"00', { fontSize: '24px', fill: '#ffffff' })
+          const gameScene = this.scene.get('game')
+          gameScene.events.on('startTimer', this.startTimer, this)
+          gameScene.events.on('stopTimer', this.stopTimer, this)
+        }
+
+        stopTimer() {
+          if (!this.timerStarted) return
+          const previousBestTime = parseInt(localStorage.getItem('bestTime')) || Infinity
+          const newTime = this.time.now - this.startTime
+          if (newTime < previousBestTime) {
+            localStorage.setItem('bestTime', newTime)
+          }
+
+          this.startTime = 0
+          this.timerStarted = false
+        }
+
+        startTimer() {
+          this.timerStarted = true
+          this.startTime = this.time.now
+        }
+
+        update() {
+          if (this.startTime === 0 || !this.timerStarted) return
+          const time = stringifyTime(this.time.now - this.startTime)
+          this.timerText.setText(time)
         }
       }
 
       class IntroScene extends Phaser.Scene {
         constructor() {
           super({ key: 'intro' })
-          this.playerWasStanding = false
         }
 
         create() {
+          this.isStarted = false
+          this.scene.stop('hud')
+
           const text = this.add
             .text(
               480,
@@ -102,12 +200,33 @@
             })
             .setOrigin(0.5, 0.5)
 
+          // Best Time
+          const bestTime = parseInt(localStorage.getItem('bestTime')) || 0
+          if (bestTime) {
+            this.add.text(40, 40, `Meilleur temps : ${stringifyTime(bestTime)}`, {
+              fontSize: '24px',
+              fill: '#1d2b53',
+            })
+          }
+
           this.input.keyboard.on('keydown-SPACE', this.startGame, this)
           this.input.on('pointerdown', this.startGame, this)
+
+          this.scene.launch('transition')
         }
 
         startGame() {
-          this.scene.start('game')
+          if (this.isStarted) return
+          this.isStarted = true
+
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once(
+            'end',
+            () => {
+              this.scene.start('game')
+            },
+            this
+          )
         }
       }
 
@@ -117,7 +236,6 @@
         }
 
         preload() {
-          // Générer une texture de carré blanc pour les particules
           const graphics = this.make.graphics()
           graphics.fillStyle(0x000000, 1)
           graphics.fillRect(0, 0, 10, 10)
@@ -129,7 +247,6 @@
           graphics.generateTexture('particleJump', 20, 20)
           graphics.clear()
 
-          // Texture de triangle pour les pics
           graphics.fillStyle(0xc2c3c7, 1)
           graphics.beginPath()
           graphics.moveTo(0, 40)
@@ -140,7 +257,6 @@
           graphics.generateTexture('spike', 40, 40)
           graphics.clear()
 
-          // Texture pour les nuages
           graphics.fillStyle(0xffffff, 1)
           graphics.fillCircle(30, 30, 30)
           graphics.fillCircle(50, 50, 30)
@@ -150,7 +266,6 @@
           graphics.generateTexture('cloud', 150, 120)
           graphics.clear()
 
-          // Texture pour les collines
           graphics.fillStyle(0x008751, 1)
           graphics.beginPath()
           graphics.moveTo(0, 400)
@@ -173,7 +288,23 @@
         }
 
         create() {
-          this.isOver = false
+          this.canMove = false
+          this.canStart = false
+          this.time.delayedCall(
+            500,
+            () => {
+              this.canStart = true
+              if (!this.sys.game.device.os.desktop) {
+                this.input.once('pointerdown', this.startTimer, this)
+              } else {
+                this.input.keyboard.once('keydown', this.startTimer, this)
+              }
+            },
+            [],
+            this
+          )
+          this.isTransitionning = false
+          this.playerWasStanding = false
           this.worldWidth = WORLD_WIDTH
           this.worldHeight = WORLD_HEIGHT
           this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
@@ -206,7 +337,6 @@
             hill.setScrollFactor(0.4)
           }
 
-          // Création des nuages
           const cloudsPos = [-100, 400, 900, 1440, 1600, 2000]
           this.clouds = this.physics.add.group({
             allowGravity: false,
@@ -217,10 +347,9 @@
             cloud.setAlpha(Phaser.Math.FloatBetween(0.2, 0.8))
           }
 
-          // Créer un groupe statique pour les plateformes
+          // Plateformes
           const platforms = this.physics.add.staticGroup()
 
-          // Créer le sol et les plateformes
           this.addPlatform(this, platforms, 0, 500, 800, 40)
           this.addPlatform(this, platforms, 400, 460, 400, 40)
           this.addPlatform(this, platforms, 920, 500, 2000, 40)
@@ -229,8 +358,6 @@
           this.addPlatform(this, platforms, 1840, 420, 40, 40)
           this.addPlatform(this, platforms, 2300, 460, 80, 40)
           this.addPlatform(this, platforms, 2300, 420, 40, 40)
-
-          // Créer les plateformes supplémentaires
           this.addPlatform(this, platforms, 2580, 380, 120, 40)
           this.addPlatform(this, platforms, 2800, 280, 120, 40)
 
@@ -243,22 +370,16 @@
             frequency: 100,
             quantity: 5,
           })
-          const target = this.add.circle(2860, 240, 20, 0x1d2b53)
-          this.physics.add.existing(target, true)
+          this.target = this.add.circle(2860, 240, 20, 0x1d2b53)
+          this.physics.add.existing(this.target, true)
+          this.target.body.setCircle(40)
+          this.target.body.setOffset(-20, -20)
 
           // Pics
           const spikes = this.physics.add.staticGroup()
-          const spike1 = this.add.sprite(1560, 480, 'spike')
-          this.physics.add.existing(spike1, true)
-          spikes.add(spike1)
-
-          const spike2 = this.add.sprite(1340, 480, 'spike')
-          this.physics.add.existing(spike2, true)
-          spikes.add(spike2)
-
-          const spike3 = this.add.sprite(1380, 480, 'spike')
-          this.physics.add.existing(spike3, true)
-          spikes.add(spike3)
+          this.addSpike(this, spikes, 1340, 480)
+          this.addSpike(this, spikes, 1380, 480)
+          this.addSpike(this, spikes, 1560, 480)
 
           // Ennemis
           this.enemies = this.physics.add.group()
@@ -269,40 +390,34 @@
           this.enemies.add(enemy)
 
           // Créer le joueur
-          this.player = this.add.container(320, 320)
+          this.player = this.add.container(80, 320)
           this.playerSprite = this.add.rectangle(0, 0, 40, 40, 0xfff1e8)
           this.player.add(this.playerSprite)
           this.player.setSize(40, 40)
           this.physics.world.enable(this.player)
-          this.jumpCount = PLAYER_MAX_JUMPS
+          this.jumpCount = 0
           this.playerDir = 1
           this.prevVelocityY = 0
 
           // Particules du joueur lors du saut
           this.playerEmitter = this.add.particles(0, 0, 'particleJump', {
             lifespan: 300,
-            speedX: {
-              min: -100,
-              max: 100,
-            },
+            speedX: { min: -100, max: 100 },
             speedY: 0,
-            scale: {
-              start: 1,
-              end: 0,
-            },
+            scale: { start: 1, end: 0 },
             emitting: false,
             quantity: 5,
           })
 
           // Ajouter la collision entre le joueur, les ennemis et le sol
-          this.physics.add.collider(this.player, platforms)
+          this.platformsCollider = this.physics.add.collider(this.player, platforms)
           this.physics.add.collider(this.enemies, platforms)
 
           // Detection de fin de jeu
-          this.physics.add.overlap(this.player, target, this.win, undefined, this)
+          this.physics.add.overlap(this.player, this.target, this.teleport, undefined, this)
 
           // Mort du joueur
-          this.physics.add.overlap(this.player, spikes, this.lose, undefined, this)
+          this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
           this.physics.add.collider(this.enemies, this.player, this.handleEnemiesCollision, undefined, this)
 
           // Suivi de la caméra
@@ -312,10 +427,11 @@
           // Créer les contrôles
           this.cursors = this.input.keyboard.createCursorKeys()
           this.keys = this.input.keyboard.addKeys('Q,D')
+          this.zKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)
           this.input.keyboard.on('keydown-UP', this.jump, this)
-          this.input.keyboard.on('keydown-Z', this.jump, this)
-          this.input.keyboard.on('keydown-SPACE', this.handleSpace, this)
           this.input.keyboard.on('keyup-UP', this.resetJump, this)
+          this.input.keyboard.on('keyup-Z', this.resetJump, this)
+          this.input.keyboard.on('keydown-SPACE', this.jump, this)
 
           // Mobiles
           if (!this.sys.game.device.os.desktop) {
@@ -323,24 +439,7 @@
             this.input.on('pointerdown', this.handlePointerDown, this)
             this.input.on('pointermove', this.handlePointerMove, this)
             this.input.on('pointerup', this.resetPointers, this)
-
-            // HUD
-            this.scene.launch('hud')
           }
-
-          // Texte de fin de jeu
-          this.winPanel = this.add.container(480, 270).setAlpha(0).setScrollFactor(0)
-          const bgPanel = this.add.rectangle(0, 0, 600, 300, 0xc2c3c7).setOrigin(0.5)
-          this.winPanel.add(bgPanel)
-
-          const winText = this.add
-            .text(0, 0, 'VICTOIRE !', {
-              fontSize: '64px',
-              fill: '#1d2b53',
-            })
-            .setOrigin(0.5)
-
-          this.winPanel.add(winText)
 
           // Limite horizontale du monde
           this.events.on('postupdate', () => {
@@ -351,20 +450,29 @@
               this.player.x = this.physics.world.bounds.width - playerHalfWidth
             }
           })
+
+          // HUD
+          this.scene.launch('hud')
+
+          // Transition
+          this.scene.launch('transition')
         }
 
         update(time, delta) {
           // Mouvement des ennemis
-          this.enemies.getChildren().forEach((enemy) => {
-            let dir = enemy.getData('dir')
-            if (enemy.body.touching.right) {
-              dir = -1
-            } else if (enemy.body.touching.left) {
-              dir = 1
-            }
-            enemy.setData('dir', dir)
-            enemy.body.setVelocityX(ENEMY_VELOCITY * dir)
-          })
+          this.enemies
+            .getChildren()
+            .filter((enemy) => !enemy.getData('isDead'))
+            .forEach((enemy) => {
+              let dir = enemy.getData('dir')
+              if (enemy.body.touching.right) {
+                dir = -1
+              } else if (enemy.body.touching.left) {
+                dir = 1
+              }
+              enemy.setData('dir', dir)
+              enemy.body.setVelocityX(ENEMY_VELOCITY * dir)
+            })
 
           // Reset des nuages
           this.clouds.children.iterate((cloud) => {
@@ -373,7 +481,7 @@
             }
           })
 
-          if (this.isOver) return
+          if (!this.canMove) return
 
           if (this.player.body.velocity.y !== 0) {
             this.prevVelocityY = this.player.body.velocity.y
@@ -390,6 +498,11 @@
             this.player.body.setVelocityX(-PLAYER_VELOCITY)
           } else if (this.cursors.right.isDown || this.keys.D.isDown || this.touchRight) {
             this.player.body.setVelocityX(PLAYER_VELOCITY)
+          }
+
+          // Z Bug, appel multiple de jump avec les events
+          if (Phaser.Input.Keyboard.JustDown(this.zKey)) {
+            this.jump()
           }
 
           // Détection de chute pour coyote time
@@ -443,18 +556,13 @@
           }
         }
 
-        handleSpace() {
-          if (!this.isOver) {
-            this.jump()
-          } else {
-            this.scene.restart()
-          }
+        startTimer() {
+          this.canMove = true
+          this.events.emit('startTimer')
         }
 
         handlePointerDown(pointer) {
-          if (this.isOver) {
-            return this.scene.restart()
-          }
+          if (!this.canMove && !this.canStart) return
 
           // Saut lors du touch sur la zone droite de l'écran
           if (pointer.x > 480) {
@@ -465,6 +573,8 @@
         }
 
         handlePointerMove(pointer) {
+          if (!this.canMove && !this.canStart) return
+
           if (pointer.x < 150) {
             this.touchRight = false
             this.touchLeft = true
@@ -481,11 +591,13 @@
         }
 
         resetJump() {
+          if (!this.canMove) return
           this.isUpKeyPressed = false
           this.isJumping = false
         }
 
         jump() {
+          if (!this.canMove && !this.canStart) return
           this.isUpKeyPressed = true
           if (
             this.player.body.blocked.down ||
@@ -526,20 +638,87 @@
           }
         }
 
-        win() {
-          this.isOver = true
-          this.player.body.setVelocity(0, 0)
-          this.player.body.allowGravity = false
-          this.player.body.immovable = true
-          this.winPanel.setAlpha(1)
+        teleport() {
+          this.canMove = false
+          this.player.body.enable = false
+          this.events.emit('stopTimer')
+
+          const timeline = this.add.timeline([
+            {
+              at: 0,
+              tween: {
+                targets: this.playerSprite,
+                angle: 540 * this.playerDir,
+                delay: 200,
+                duration: 600,
+                scale: 0.5,
+                x: this.target.x - this.player.x,
+                y: this.target.y - this.player.y,
+              },
+            },
+            {
+              at: 1200,
+              tween: {
+                targets: this.playerSprite,
+                duration: 300,
+                scale: 0,
+                alpha: 0,
+                ease: 'Cubic.In',
+              },
+            },
+            {
+              at: 900,
+              tween: {
+                targets: this.target,
+                duration: 300,
+                scale: 1.6,
+                ease: 'Cubic.Out',
+              },
+            },
+            {
+              at: 1200,
+              tween: {
+                targets: this.target,
+                duration: 300,
+                scale: 0,
+                ease: 'Cubic.In',
+                onComplete: () => {
+                  transitionEventsEmitter.emit('start')
+                  transitionEventsEmitter.once(
+                    'end',
+                    () => {
+                      this.scene.start('intro')
+                    },
+                    this
+                  )
+                },
+              },
+            },
+          ])
+          timeline.play()
         }
 
-        restart() {
-          this.scene.restart()
+        die() {
+          if (this.player.getData('isDead')) return
+          this.player.setData('isDead', true)
+          this.canMove = false
+          this.platformsCollider.active = false
+          this.player.body.setVelocity(PLAYER_DEATH_JUMP_X * this.playerDir * -1, PLAYER_DEATH_JUMP_Y)
+          this.time.delayedCall(1000, this.lose, [], this)
         }
 
         lose() {
-          this.scene.restart()
+          if (this.isTransitionning) return
+
+          this.isTransitionning = true
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once(
+            'end',
+            () => {
+              this.scene.restart()
+            },
+            this
+          )
         }
 
         addPlatform(scene, group, x, y, width, height) {
@@ -548,9 +727,31 @@
           group.add(platform)
         }
 
+        addSpike(scene, group, x, y) {
+          const spike = this.add.sprite(x, y, 'spike')
+          this.physics.add.existing(spike, true)
+          spike.body.setCircle(spike.displayWidth / 3)
+          spike.body.setOffset(spike.displayWidth / 6, spike.displayHeight / 3)
+          group.add(spike)
+        }
+
         handleEnemiesCollision(player, enemy) {
+          if (this.player.getData('isDead')) return
+
           if (player.body.touching.down && enemy.body.touching.up) {
-            enemy.destroy()
+            enemy.setData('isDead', true)
+            enemy.body.setVelocityX(0)
+
+            this.tweens.add({
+              targets: enemy,
+              duration: 300,
+              scale: 0,
+              ease: 'Back.In',
+              onComplete: () => {
+                enemy.destroy()
+              },
+            })
+
             player.body.setVelocityY(-PLAYER_BOUNCE_OFF_VELOCITY)
             this.jumpCount = 1
             this.isJumping = true
@@ -558,7 +759,7 @@
             this.isUpKeyPressed = false
             this.playerWasStanding = true
           } else {
-            this.lose.call(this)
+            this.die.call(this)
           }
         }
 
@@ -570,7 +771,6 @@
         }
       }
 
-      // Configuration globale de Phaser
       const config = {
         type: Phaser.AUTO,
         backgroundColor: '#29ADFF',
@@ -591,7 +791,7 @@
         input: {
           activePointers: 3,
         },
-        scene: [IntroScene, GameScene, HUDScene],
+        scene: [IntroScene, GameScene, HUDScene, TransitionScene],
       }
 
       const game = new Phaser.Game(config)
