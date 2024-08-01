@@ -14,8 +14,6 @@
   <body>
     <script>
       // Globales
-      const WORLD_WIDTH = 2920
-      const WORLD_HEIGHT = 540
       const PLAYER_VELOCITY = 240
       const PLAYER_BOUNCE_OFF_VELOCITY = 400
       const PLAYER_MIN_JUMP_VELOCITY = -360
@@ -28,6 +26,123 @@
       const PLAYER_DEATH_JUMP_Y = -600
       const PLAYER_FALL_SQUASH_VELOCITY = 700
       const ENEMY_VELOCITY = 140
+      const NUM_LEVELS = 8
+
+      const levelsData = {
+        level1: {
+          world: { width: 2920, height: 540 },
+          player: { x: 80, y: 320 },
+          target: { x: 2860, y: 240 },
+          hills: [
+            { x: 200, y: 200 },
+            { x: 360, y: 240 },
+            { x: 800, y: 240 },
+            { x: 1000, y: 200 },
+            { x: 1600, y: 200 },
+          ],
+          hillsFront: [
+            { x: 10, y: 340 },
+            { x: 700, y: 380 },
+            { x: 800, y: 420 },
+            { x: 1300, y: 380 },
+            { x: 1600, y: 420 },
+          ],
+          clouds: {
+            y: { min: 60, max: 180 },
+            x: [-100, 400, 900, 1440, 1600, 2000],
+          },
+          platforms: [
+            { x: 0, y: 500, width: 800, height: 40 },
+            { x: 400, y: 460, width: 400, height: 40 },
+            { x: 920, y: 500, width: 2000, height: 40 },
+            { x: 920, y: 460, width: 240, height: 40 },
+            { x: 1800, y: 460, width: 80, height: 40 },
+            { x: 1840, y: 420, width: 40, height: 40 },
+            { x: 2300, y: 460, width: 80, height: 40 },
+            { x: 2300, y: 420, width: 40, height: 40 },
+            { x: 2580, y: 380, width: 120, height: 40 },
+            { x: 2800, y: 280, width: 120, height: 40 },
+          ],
+          enemies: [{ x: 2000, y: 500 }],
+          spikes: [
+            { x: 1360, y: 460 },
+            { x: 1400, y: 460 },
+            { x: 1580, y: 460 },
+          ],
+        },
+        level2: {
+          world: { width: 3400, height: 1080 },
+          player: { x: 80, y: 700 },
+          target: { x: 3280, y: 640 },
+          hills: [
+            { x: -300, y: 200 },
+            { x: 360, y: 240 },
+            { x: 500, y: 180 },
+            { x: 1000, y: 100 },
+          ],
+          hillsFront: [
+            { x: -160, y: 380 },
+            { x: 400, y: 480 },
+            { x: 1400, y: 300 },
+          ],
+          clouds: {
+            y: { min: 500, max: 620 },
+            x: [-100, 400, 900, 1440, 1600, 2000],
+          },
+          platforms: [
+            { x: 0, y: 880, width: 600, height: 200 },
+            { x: 720, y: 880, width: 80, height: 200 },
+            { x: 920, y: 880, width: 80, height: 200 },
+            { x: 1120, y: 960, width: 80, height: 120 },
+            { x: 1200, y: 1040, width: 400, height: 40 },
+            { x: 1600, y: 960, width: 200, height: 120 },
+            { x: 1800, y: 1040, width: 160, height: 40 },
+            { x: 1960, y: 960, width: 160, height: 120 },
+            { x: 2120, y: 880, width: 160, height: 200 },
+            { x: 2280, y: 800, width: 160, height: 280 },
+            { x: 2440, y: 680, width: 160, height: 400 },
+            { x: 2680, y: 1040, width: 80, height: 40 },
+            { x: 2840, y: 0, width: 80, height: 880 },
+            { x: 2840, y: 1040, width: 560, height: 40 },
+            { x: 3120, y: 680, width: 280, height: 400 },
+            { x: 3080, y: 920, width: 40, height: 40 },
+            { x: 2920, y: 800, width: 40, height: 40 },
+            { x: 3080, y: 680, width: 40, height: 40 },
+          ],
+          enemies: [
+            { x: 1400, y: 1000 },
+            { x: 1400, y: 1000, dir: -1 },
+          ],
+          spikes: [
+            { x: 1800, y: 1000 },
+            { x: 1840, y: 1000 },
+            { x: 1880, y: 1000 },
+            { x: 1920, y: 1000 },
+            { x: 2600, y: 1040 },
+            { x: 2640, y: 1040 },
+            { x: 2760, y: 1040 },
+            { x: 2800, y: 1040 },
+          ],
+          fallingBlocks: [
+            { x: 1800, y: 960 },
+            { x: 1840, y: 960 },
+            { x: 1880, y: 960 },
+            { x: 1920, y: 960 },
+            { x: 2600, y: 680 },
+            { x: 2640, y: 680 },
+            { x: 2680, y: 680 },
+            { x: 2720, y: 680 },
+            { x: 2760, y: 680 },
+            { x: 2800, y: 680 },
+            { x: 2600, y: 840 },
+            { x: 2640, y: 840 },
+            { x: 2680, y: 840 },
+            { x: 2720, y: 840 },
+            { x: 2760, y: 840 },
+            { x: 2800, y: 840 },
+          ],
+        },
+      }
 
       const transitionEventsEmitter = new Phaser.Events.EventEmitter()
 
@@ -42,6 +157,45 @@
           '"' +
           Phaser.Utils.String.Pad(centiseconds, 2, '0', 1)
         )
+      }
+
+      function getUnlockedLevels() {
+        const unlockedLevelsString = localStorage.getItem('unlockedLevels')
+        if (unlockedLevelsString) {
+          return JSON.parse(unlockedLevelsString)
+        } else {
+          const level = {
+            level: 1,
+            time: 0,
+          }
+          localStorage.setItem('unlockedLevels', JSON.stringify([level]))
+          return [level]
+        }
+      }
+
+      function getLevelInfo(levelNum) {
+        const unlockedLevels = getUnlockedLevels()
+        return unlockedLevels.find(({ level }) => level === levelNum)
+      }
+
+      function updateLevelInfo(levelNum, data) {
+        const unlockedLevels = getUnlockedLevels()
+        const index = unlockedLevels.findIndex(({ level }) => level === levelNum)
+        if (index === -1) return
+
+        unlockedLevels[index] = { ...unlockedLevels[index], ...data }
+        localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+      }
+
+      function unlockLevel(levelNum, time) {
+        const unlockedLevels = getUnlockedLevels()
+        if (unlockedLevels.some(({ level }) => level === levelNum)) return
+
+        unlockedLevels.push({
+          level: levelNum,
+          time,
+        })
+        localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
       }
 
       class TransitionScene extends Phaser.Scene {
@@ -136,12 +290,16 @@
           gameScene.events.on('stopTimer', this.stopTimer, this)
         }
 
-        stopTimer() {
+        stopTimer(currentLevel) {
           if (!this.timerStarted) return
-          const previousBestTime = parseInt(localStorage.getItem('bestTime')) || Infinity
+
+          const levelInfo = getLevelInfo(currentLevel)
+          if (!levelInfo) return
+
+          const previousBestTime = levelInfo.time || Infinity
           const newTime = this.time.now - this.startTime
           if (newTime < previousBestTime) {
-            localStorage.setItem('bestTime', newTime)
+            updateLevelInfo(currentLevel, { time: newTime })
           }
 
           this.startTime = 0
@@ -167,7 +325,6 @@
 
         create() {
           this.isStarted = false
-          this.scene.stop('hud')
 
           const text = this.add
             .text(
@@ -200,15 +357,6 @@
             })
             .setOrigin(0.5, 0.5)
 
-          // Best Time
-          const bestTime = parseInt(localStorage.getItem('bestTime')) || 0
-          if (bestTime) {
-            this.add.text(40, 40, `Meilleur temps : ${stringifyTime(bestTime)}`, {
-              fontSize: '24px',
-              fill: '#1d2b53',
-            })
-          }
-
           this.input.keyboard.on('keydown-SPACE', this.startGame, this)
           this.input.on('pointerdown', this.startGame, this)
 
@@ -223,7 +371,100 @@
           transitionEventsEmitter.once(
             'end',
             () => {
-              this.scene.start('game')
+              this.scene.start('levels')
+            },
+            this
+          )
+        }
+      }
+
+      class LevelsScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'levels' })
+        }
+
+        create() {
+          this.isStarted = false
+          this.scene.stop('hud')
+          const unlockedLevels = getUnlockedLevels()
+
+          // Bouton retour
+          const graphics = this.make.graphics()
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 60, 60)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.beginPath()
+          graphics.moveTo(40, 20)
+          graphics.lineTo(40, 40)
+          graphics.lineTo(20, 30)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnBack', 60, 60)
+          graphics.destroy()
+
+          const btnBack = this.add.sprite(40, 40, 'btnBack')
+          btnBack.setInteractive()
+          btnBack.on('pointerdown', () => this.goToScreen('intro'))
+
+          // Niveaux
+          const buttonOffset = 48
+          const buttonSize = 80
+          const buttonsPerCol = 2
+          const buttonsPerRow = Math.ceil(NUM_LEVELS / buttonsPerCol)
+
+          const totalButtonsWidth = (buttonSize + buttonOffset) * (buttonsPerRow - 1)
+          const totalButtonsHeight = (buttonSize + buttonOffset) * (buttonsPerCol - 1)
+          const startX = this.cameras.main.centerX - totalButtonsWidth / 2
+          const startY = this.cameras.main.centerY - totalButtonsHeight / 2
+
+          for (let i = 0; i < NUM_LEVELS; i++) {
+            const level = i + 1
+            const col = Math.floor(i / buttonsPerCol)
+            const row = i % buttonsPerCol
+            const direction = i % 2 ? 1 : -1
+
+            const x = startX + col * (buttonSize + buttonOffset) + ((buttonSize + buttonOffset) / 4) * direction
+            const y = startY + row * (buttonSize + buttonOffset) - ((buttonSize + buttonOffset) / 4) * direction
+            const timePosY = y + buttonSize * direction
+
+            const button = this.add.rectangle(x, y, buttonSize, buttonSize, 0x1d2b53)
+
+            const levelInfo = getLevelInfo(level)
+            button.rotation = Phaser.Math.DegToRad(45)
+
+            if (levelInfo) {
+              button.setInteractive()
+              button.on('pointerdown', () => this.goToScreen('game', { level }))
+            } else {
+              button.alpha = 0.5
+            }
+
+            const time = (levelInfo && levelInfo.time) || 0
+            if (time) {
+              this.add.rectangle(x, timePosY, 100, 30, 0xffffff).setOrigin(0.5)
+              this.add
+                .text(x, timePosY, time ? stringifyTime(levelInfo.time) : '10\'00"00', {
+                  color: '#1d2b53',
+                  fontSize: '16px',
+                })
+                .setOrigin(0.5)
+            }
+
+            this.add.text(x, y, (i + 1).toString(), { color: '#ffffff', fontSize: '32px' }).setOrigin(0.5)
+          }
+
+          this.scene.launch('transition')
+        }
+
+        goToScreen(screen, params = {}) {
+          if (this.isStarted) return
+          this.isStarted = true
+
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once(
+            'end',
+            () => {
+              this.scene.start(screen, params)
             },
             this
           )
@@ -233,6 +474,11 @@
       class GameScene extends Phaser.Scene {
         constructor() {
           super({ key: 'game' })
+        }
+
+        init(data) {
+          this.currentLevel = data.level
+          this.levelData = levelsData[`level${this.currentLevel}`]
         }
 
         preload() {
@@ -268,32 +514,30 @@
 
           graphics.fillStyle(0x008751, 1)
           graphics.beginPath()
-          graphics.moveTo(0, 400)
-          graphics.lineTo(200, 0)
-          graphics.lineTo(400, 400)
+          graphics.moveTo(0, 800)
+          graphics.lineTo(400, 0)
+          graphics.lineTo(800, 800)
           graphics.closePath()
           graphics.fillPath()
-          graphics.generateTexture('hill', 400, 400)
+          graphics.generateTexture('hill', 800, 800)
           graphics.clear()
 
           graphics.fillStyle(0x5f574f, 1)
           graphics.beginPath()
-          graphics.moveTo(0, 160)
-          graphics.lineTo(80, 0)
-          graphics.lineTo(160, 160)
+          graphics.moveTo(0, 800)
+          graphics.lineTo(400, 0)
+          graphics.lineTo(800, 800)
           graphics.closePath()
           graphics.fillPath()
-          graphics.generateTexture('hill2', 160, 160)
+          graphics.generateTexture('hill2', 800, 800)
           graphics.destroy()
         }
 
         create() {
           this.canMove = false
-          this.canStart = false
           this.time.delayedCall(
             500,
             () => {
-              this.canStart = true
               if (!this.sys.game.device.os.desktop) {
                 this.input.once('pointerdown', this.startTimer, this)
               } else {
@@ -305,17 +549,11 @@
           )
           this.isTransitionning = false
           this.playerWasStanding = false
-          this.worldWidth = WORLD_WIDTH
-          this.worldHeight = WORLD_HEIGHT
-          this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+          this.worldWidth = this.levelData.world.width
+          this.worldHeight = this.levelData.world.height
+          this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight)
 
-          const hillsPos = [
-            { x: 200, y: 200 },
-            { x: 360, y: 240 },
-            { x: 800, y: 240 },
-            { x: 1000, y: 200 },
-            { x: 1600, y: 200 },
-          ]
+          const hillsPos = this.levelData.hills ?? []
           this.hills = this.add.group()
           for (let i = 0; i < hillsPos.length; i++) {
             let hill = this.hills.create(hillsPos[i].x, hillsPos[i].y, 'hill')
@@ -323,13 +561,7 @@
             hill.setScrollFactor(0.3)
           }
 
-          const hillsPos2 = [
-            { x: 10, y: 340 },
-            { x: 700, y: 380 },
-            { x: 800, y: 420 },
-            { x: 1300, y: 380 },
-            { x: 1600, y: 420 },
-          ]
+          const hillsPos2 = this.levelData.hillsFront ?? []
           this.hills2 = this.add.group()
           for (let i = 0; i < hillsPos2.length; i++) {
             let hill = this.hills2.create(hillsPos2[i].x, hillsPos2[i].y, 'hill2')
@@ -337,32 +569,30 @@
             hill.setScrollFactor(0.4)
           }
 
-          const cloudsPos = [-100, 400, 900, 1440, 1600, 2000]
+          const cloudsPos = this.levelData.clouds.x ?? []
           this.clouds = this.physics.add.group({
             allowGravity: false,
           })
           for (let i = 0; i < cloudsPos.length; i++) {
-            let cloud = this.clouds.create(cloudsPos[i], Phaser.Math.Between(60, 180), 'cloud')
+            let cloud = this.clouds.create(
+              cloudsPos[i],
+              Phaser.Math.Between(this.levelData.clouds.y.min, this.levelData.clouds.y.max),
+              'cloud'
+            )
             cloud.setVelocityX(Phaser.Math.Between(10, 20))
             cloud.setAlpha(Phaser.Math.FloatBetween(0.2, 0.8))
           }
 
           // Plateformes
           const platforms = this.physics.add.staticGroup()
-
-          this.addPlatform(this, platforms, 0, 500, 800, 40)
-          this.addPlatform(this, platforms, 400, 460, 400, 40)
-          this.addPlatform(this, platforms, 920, 500, 2000, 40)
-          this.addPlatform(this, platforms, 920, 460, 240, 40)
-          this.addPlatform(this, platforms, 1800, 460, 80, 40)
-          this.addPlatform(this, platforms, 1840, 420, 40, 40)
-          this.addPlatform(this, platforms, 2300, 460, 80, 40)
-          this.addPlatform(this, platforms, 2300, 420, 40, 40)
-          this.addPlatform(this, platforms, 2580, 380, 120, 40)
-          this.addPlatform(this, platforms, 2800, 280, 120, 40)
+          const platformsPos = this.levelData.platforms || []
+          for (let i = 0; i < platformsPos.length; i++) {
+            const { x, y, width, height } = platformsPos[i]
+            this.addPlatform(platforms, x, y, width, height)
+          }
 
           // Créer le téléporteur et les particules
-          const particles = this.add.particles(2860, 240, 'particle', {
+          const particles = this.add.particles(this.levelData.target.x, this.levelData.target.y, 'particle', {
             speed: { min: -100, max: 100 },
             angle: { min: 0, max: 360 },
             scale: { start: 1, end: 0 },
@@ -370,27 +600,42 @@
             frequency: 100,
             quantity: 5,
           })
-          this.target = this.add.circle(2860, 240, 20, 0x1d2b53)
+
+          this.target = this.add.circle(this.levelData.target.x, this.levelData.target.y, 20, 0x1d2b53)
           this.physics.add.existing(this.target, true)
           this.target.body.setCircle(40)
           this.target.body.setOffset(-20, -20)
 
           // Pics
           const spikes = this.physics.add.staticGroup()
-          this.addSpike(this, spikes, 1340, 480)
-          this.addSpike(this, spikes, 1380, 480)
-          this.addSpike(this, spikes, 1560, 480)
+          const spikesPos = this.levelData.spikes ?? []
+          for (let i = 0; i < spikesPos.length; i++) {
+            const { x, y } = spikesPos[i]
+            this.addSpike(spikes, x, y)
+          }
+
+          // Plateformes sensibles
+          this.fallingBlocks = this.physics.add.staticGroup()
+          const fallingBlocksPos = this.levelData.fallingBlocks ?? []
+          for (let i = 0; i < fallingBlocksPos.length; i++) {
+            const { x, y } = fallingBlocksPos[i]
+            this.addFallingBlock(this.fallingBlocks, x, y)
+          }
 
           // Ennemis
           this.enemies = this.physics.add.group()
-          const enemy = this.add.rectangle(2000, 500, 40, 40, 0xff004d)
-          enemy.setOrigin(0.5, 1)
-          enemy.setData('dir', 1)
-          this.physics.add.existing(enemy)
-          this.enemies.add(enemy)
+          const enemiesPos = this.levelData.enemies ?? []
+          for (let i = 0; i < enemiesPos.length; i++) {
+            const { x, y, dir } = enemiesPos[i]
+            const enemy = this.add.rectangle(x, y, 40, 40, 0xff004d)
+            enemy.setOrigin(0.5, 1)
+            enemy.setData('dir', dir ?? 1)
+            this.physics.add.existing(enemy)
+            this.enemies.add(enemy)
+          }
 
           // Créer le joueur
-          this.player = this.add.container(80, 320)
+          this.player = this.add.container(this.levelData.player.x, this.levelData.player.y)
           this.playerSprite = this.add.rectangle(0, 0, 40, 40, 0xfff1e8)
           this.player.add(this.playerSprite)
           this.player.setSize(40, 40)
@@ -412,6 +657,7 @@
           // Ajouter la collision entre le joueur, les ennemis et le sol
           this.platformsCollider = this.physics.add.collider(this.player, platforms)
           this.physics.add.collider(this.enemies, platforms)
+          this.physics.add.collider(this.player, this.fallingBlocks, this.handleFallingBlockCollision, undefined, this)
 
           // Detection de fin de jeu
           this.physics.add.overlap(this.player, this.target, this.teleport, undefined, this)
@@ -422,16 +668,16 @@
 
           // Suivi de la caméra
           this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
-          this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+          this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight)
 
           // Créer les contrôles
           this.cursors = this.input.keyboard.createCursorKeys()
           this.keys = this.input.keyboard.addKeys('Q,D')
           this.zKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)
-          this.input.keyboard.on('keydown-UP', this.jump, this)
+          this.upKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP)
+          this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
           this.input.keyboard.on('keyup-UP', this.resetJump, this)
           this.input.keyboard.on('keyup-Z', this.resetJump, this)
-          this.input.keyboard.on('keydown-SPACE', this.jump, this)
 
           // Mobiles
           if (!this.sys.game.device.os.desktop) {
@@ -501,7 +747,11 @@
           }
 
           // Z Bug, appel multiple de jump avec les events
-          if (Phaser.Input.Keyboard.JustDown(this.zKey)) {
+          const justTriggeredJump =
+            Phaser.Input.Keyboard.JustDown(this.zKey) ||
+            Phaser.Input.Keyboard.JustDown(this.upKey) ||
+            Phaser.Input.Keyboard.JustDown(this.spaceKey)
+          if (justTriggeredJump) {
             this.jump()
           }
 
@@ -509,7 +759,7 @@
           if (this.playerWasStanding && !this.player.body.blocked.down) {
             this.playerWasStanding = false
             this.fallStartTime = this.time.now
-          } else if (!this.playerWasStanding && this.player.body.blocked.down) {
+          } else if (!this.playerWasStanding && this.player.body.blocked.down && !justTriggeredJump) {
             this.playerWasStanding = true
             this.jumpCount = 0
 
@@ -562,8 +812,6 @@
         }
 
         handlePointerDown(pointer) {
-          if (!this.canMove && !this.canStart) return
-
           // Saut lors du touch sur la zone droite de l'écran
           if (pointer.x > 480) {
             this.jump()
@@ -573,8 +821,6 @@
         }
 
         handlePointerMove(pointer) {
-          if (!this.canMove && !this.canStart) return
-
           if (pointer.x < 150) {
             this.touchRight = false
             this.touchLeft = true
@@ -597,7 +843,7 @@
         }
 
         jump() {
-          if (!this.canMove && !this.canStart) return
+          if (!this.canMove) return
           this.isUpKeyPressed = true
           if (
             this.player.body.blocked.down ||
@@ -641,7 +887,11 @@
         teleport() {
           this.canMove = false
           this.player.body.enable = false
-          this.events.emit('stopTimer')
+          this.events.emit('stopTimer', this.currentLevel)
+
+          if (this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
+            unlockLevel(this.currentLevel + 1)
+          }
 
           const timeline = this.add.timeline([
             {
@@ -687,7 +937,7 @@
                   transitionEventsEmitter.once(
                     'end',
                     () => {
-                      this.scene.start('intro')
+                      this.scene.start('levels')
                     },
                     this
                   )
@@ -721,18 +971,68 @@
           )
         }
 
-        addPlatform(scene, group, x, y, width, height) {
-          const platform = scene.add.rectangle(x, y, width, height, 0xab5236)
+        addPlatform(group, x, y, width, height) {
+          const platform = this.add.rectangle(x, y, width, height, 0xab5236)
           platform.setOrigin(0)
           group.add(platform)
         }
 
-        addSpike(scene, group, x, y) {
+        addSpike(group, x, y) {
           const spike = this.add.sprite(x, y, 'spike')
+          spike.setOrigin(0)
           this.physics.add.existing(spike, true)
           spike.body.setCircle(spike.displayWidth / 3)
           spike.body.setOffset(spike.displayWidth / 6, spike.displayHeight / 3)
           group.add(spike)
+        }
+
+        addFallingBlock(group, x, y) {
+          const fallingBlock = this.add.rectangle(x + 1, y, 38, 38, 0x5f574f)
+          fallingBlock.setOrigin(0)
+          group.add(fallingBlock)
+        }
+
+        handleFallingBlockCollision(player, fallingBlock) {
+          if (!player.body.touching.down || fallingBlock.getData('isTriggered')) return
+          fallingBlock.setData('isTriggered', true)
+
+          this.tweens.add({
+            targets: fallingBlock,
+            duration: 80,
+            repeat: 4,
+            yoyo: true,
+            ease: 'Bounce.easeInOut',
+            x: fallingBlock.x + 2,
+            onComplete: () => {
+              fallingBlock.body.enable = false
+              this.tweens.add({
+                targets: fallingBlock,
+                y: fallingBlock.y + 40,
+                alpha: 0,
+                duration: 300,
+                onComplete: () => {
+                  fallingBlock.destroy()
+                },
+              })
+            },
+          })
+
+          // Check des blocs à droite et à gauche du joueur à la main
+          const playerBottomHitbox = this.player.getBounds()
+          playerBottomHitbox.setPosition(playerBottomHitbox.x, playerBottomHitbox.y + 20)
+
+          this.fallingBlocks
+            .getChildren()
+            .filter((block) => {
+              const isTriggered = block.getData('isTriggered')
+              if (isTriggered) return false
+              console.log(playerBottomHitbox, block.getBounds())
+              return Phaser.Geom.Intersects.RectangleToRectangle(playerBottomHitbox, block.getBounds())
+            })
+            .forEach((block) => {
+              console.log('oui', block)
+              this.handleFallingBlockCollision(this.player, block)
+            })
         }
 
         handleEnemiesCollision(player, enemy) {
@@ -791,7 +1091,7 @@
         input: {
           activePointers: 3,
         },
-        scene: [IntroScene, GameScene, HUDScene, TransitionScene],
+        scene: [IntroScene, LevelsScene, GameScene, HUDScene, TransitionScene],
       }
 
       const game = new Phaser.Game(config)
