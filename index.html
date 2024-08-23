@@ -52,14 +52,14 @@
             x: [-100, 400, 900, 1440, 1600, 2000],
           },
           platforms: [
-            { x: 0, y: 500, width: 800, height: 40 },
-            { x: 400, y: 460, width: 400, height: 40 },
-            { x: 920, y: 500, width: 2000, height: 40 },
-            { x: 920, y: 460, width: 240, height: 40 },
-            { x: 1800, y: 460, width: 80, height: 40 },
-            { x: 1840, y: 420, width: 40, height: 40 },
-            { x: 2300, y: 460, width: 80, height: 40 },
-            { x: 2300, y: 420, width: 40, height: 40 },
+            { x: 0, y: 500, width: 400, height: 40 },
+            { x: 400, y: 460, width: 400, height: 80 },
+            { x: 920, y: 460, width: 240, height: 80 },
+            { x: 1160, y: 500, width: 1760, height: 40 },
+            { x: 1800, y: 460, width: 40, height: 40 },
+            { x: 1840, y: 420, width: 40, height: 80 },
+            { x: 2300, y: 420, width: 40, height: 80 },
+            { x: 2340, y: 460, width: 40, height: 40 },
             { x: 2580, y: 380, width: 120, height: 40 },
             { x: 2800, y: 280, width: 120, height: 40 },
           ],
@@ -140,6 +140,109 @@
             { x: 2720, y: 840 },
             { x: 2760, y: 840 },
             { x: 2800, y: 840 },
+          ],
+        },
+        level3: {
+          world: { width: 4040, height: 1080 },
+          player: { x: 80, y: 760 },
+          target: { x: 2680, y: 160 },
+          hills: [
+            { x: -340, y: 200 },
+            { x: 360, y: 240 },
+            { x: 500, y: 180 },
+            { x: 1000, y: 100 },
+          ],
+          hillsFront: [
+            { x: 0, y: 380 },
+            { x: 300, y: 400 },
+            { x: 1000, y: 300 },
+          ],
+          clouds: {
+            y: { min: 400, max: 520 },
+            x: [-100, 200, 740, 1440, 1600, 2000],
+          },
+          platforms: [
+            { x: 0, y: 880, width: 400, height: 200 },
+            { x: 400, y: 760, width: 200, height: 320 },
+            { x: 600, y: 680, width: 200, height: 400 },
+            { x: 800, y: 840, width: 480, height: 240 },
+            { x: 1280, y: 680, width: 200, height: 400 },
+            { x: 1480, y: 880, width: 280, height: 200 },
+            { x: 1640, y: 0, width: 120, height: 720 },
+            { x: 1640, y: 960, width: 600, height: 120 },
+            { x: 1640, y: 240, width: 1560, height: 360 },
+            { x: 2240, y: 880, width: 120, height: 200 },
+            { x: 3080, y: 880, width: 680, height: 200 },
+            { x: 3200, y: 240, width: 120, height: 520 },
+            { x: 3760, y: 0, width: 280, height: 1080 },
+            { x: 1760, y: 0, width: 840, height: 240 },
+          ],
+          oneWayPlatforms: [
+            { x: 0, y: 760, width: 400 },
+            {
+              x: 800,
+              y: 680,
+              width: 120,
+              points: [{ x: 1160, y: 680 }],
+            },
+            {
+              x: 2360,
+              y: 880,
+              width: 120,
+              points: [{ x: 2600, y: 880 }],
+            },
+            {
+              x: 2960,
+              y: 880,
+              width: 120,
+              points: [{ x: 2720, y: 880 }],
+            },
+            { x: 3320, y: 740, width: 440 },
+            {
+              x: 3320,
+              y: 620,
+              width: 120,
+              points: [{ x: 3640, y: 620 }],
+            },
+            {
+              x: 3640,
+              y: 500,
+              width: 120,
+              points: [{ x: 3320, y: 500 }],
+            },
+            {
+              x: 3320,
+              y: 380,
+              width: 120,
+              points: [{ x: 3640, y: 380 }],
+            },
+            { x: 3320, y: 240, width: 440 },
+          ],
+          enemies: [{ x: 1720, y: 960 }],
+          spikes: [
+            { x: 560, y: 720 },
+            { x: 800, y: 800 },
+            { x: 840, y: 800 },
+            { x: 880, y: 800 },
+            { x: 920, y: 800 },
+            { x: 960, y: 800 },
+            { x: 1000, y: 800 },
+            { x: 1040, y: 800 },
+            { x: 1080, y: 800 },
+            { x: 1120, y: 800 },
+            { x: 1160, y: 800 },
+            { x: 1200, y: 800 },
+            { x: 1240, y: 800 },
+            { x: 1480, y: 840 },
+            { x: 1520, y: 840 },
+            { x: 3280, y: 200 },
+            { x: 3240, y: 200 },
+          ],
+          fallingBlocks: [
+            { x: 1480, y: 680 },
+            { x: 1520, y: 680 },
+            { x: 1560, y: 680 },
+            { x: 1600, y: 680 },
           ],
         },
       }
@@ -251,8 +354,8 @@
         }
 
         create() {
+          const graphics = this.make.graphics()
           if (!this.sys.game.device.os.desktop) {
-            const graphics = this.make.graphics()
             graphics.lineStyle(2, 0xffffff, 1)
             graphics.strokeRect(0, 0, 100, 100)
             graphics.fillStyle(0xffffff, 1)
@@ -275,11 +378,61 @@
             graphics.closePath()
             graphics.fillPath()
             graphics.generateTexture('btnLeft', 100, 100)
-            graphics.destroy()
 
-            this.btnLeft = this.add.sprite(40, 420, 'btnLeft').setOrigin(0)
-            this.btnRight = this.add.sprite(160, 420, 'btnRight').setOrigin(0)
+            this.add.sprite(40, 420, 'btnLeft').setOrigin(0)
+            this.add.sprite(160, 420, 'btnRight').setOrigin(0)
           }
+
+          // Bouton pause
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.fillRect(10, 10, 8, 20)
+          graphics.fillRect(22, 10, 8, 20)
+          graphics.generateTexture('btnPause', 40, 40)
+          graphics.clear()
+
+          // Bouton play
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.beginPath()
+          graphics.moveTo(10, 10)
+          graphics.lineTo(10, 30)
+          graphics.lineTo(30, 20)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnPlay', 40, 40)
+          graphics.clear()
+
+          // Bouton restart
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.beginPath()
+          graphics.moveTo(20, 10)
+          graphics.lineTo(30, 20)
+          graphics.lineTo(20, 30)
+          graphics.lineTo(10, 20)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnRestart', 40, 40)
+          graphics.clear()
+
+          // Bouton niveaux
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.fillRect(8, 8, 10, 10)
+          graphics.fillRect(22, 8, 10, 10)
+          graphics.fillRect(8, 22, 10, 10)
+          graphics.fillRect(22, 22, 10, 10)
+          graphics.generateTexture('btnLevels', 40, 40)
+          graphics.destroy()
+
+          const btnPause = this.add.sprite(900, 20, 'btnPause')
+          btnPause.setOrigin(0).setInteractive()
+          btnPause.on('pointerdown', this.togglePause, this)
 
           this.timerStarted = false
           this.startTime = 0
@@ -288,6 +441,74 @@
           const gameScene = this.scene.get('game')
           gameScene.events.on('startTimer', this.startTimer, this)
           gameScene.events.on('stopTimer', this.stopTimer, this)
+
+          // Panel
+          const { width, height } = this.scale
+          const [panelWidth, panelHeight] = [320, 180]
+          const [centerX, centerY] = [(width - panelWidth) / 2, (height - panelHeight) / 2]
+
+          this.panelPause = this.add.container(0, 0)
+          this.panelPause.setVisible(false)
+
+          const panelOverlay = this.add.rectangle(0, 0, width, height, 0x1d2b53, 0.4)
+          panelOverlay.setOrigin(0).setInteractive()
+
+          const panelPauseBg = this.add.rectangle(centerX, centerY, panelWidth, panelHeight, 0x1d2b53).setOrigin(0)
+          const panelTxt = this.add
+            .text(width / 2, centerY + 20, 'PAUSE', { fontSize: '32px', fill: '#ffffff' })
+            .setOrigin(0.5, 0)
+
+          const btnPlay = this.add.sprite(width / 2, height / 2 + 20, 'btnPlay').setInteractive()
+          btnPlay.on('pointerdown', this.togglePause, this)
+
+          const btnRestart = this.add.sprite(width / 2 + 60, height / 2 + 20, 'btnRestart').setInteractive()
+          btnRestart.on('pointerdown', this.restartCurrentLevel, this)
+
+          const btnLevels = this.add.sprite(width / 2 - 60, height / 2 + 20, 'btnLevels').setInteractive()
+          btnLevels.on('pointerdown', this.goToLevels, this)
+
+          this.panelPause.add([panelOverlay, panelPauseBg, panelTxt, btnPlay, btnRestart, btnLevels])
+        }
+
+        goToLevels() {
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once(
+            'end',
+            () => {
+              this.registry.set('isPaused', false)
+              const gameScene = this.scene.get('game')
+              gameScene.scene.start('levels')
+            },
+            this
+          )
+        }
+
+        restartCurrentLevel() {
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once(
+            'end',
+            () => {
+              this.registry.set('isPaused', false)
+              this.scene.start('game')
+              this.scene.restart('hud')
+            },
+            this
+          )
+        }
+
+        togglePause() {
+          const isPaused = this.registry.get('isPaused')
+          if (isPaused) {
+            game.scene.resume('game')
+            this.pauseTime = this.time.now - this.pauseTime
+            this.startTime += this.pauseTime
+          } else {
+            game.scene.pause('game')
+            this.pauseTime = this.time.now
+          }
+
+          this.panelPause.setVisible(!isPaused)
+          this.registry.set('isPaused', !isPaused)
         }
 
         stopTimer(currentLevel) {
@@ -312,7 +533,8 @@
         }
 
         update() {
-          if (this.startTime === 0 || !this.timerStarted) return
+          const isPaused = this.registry.get('isPaused')
+          if (this.startTime === 0 || !this.timerStarted || isPaused) return
           const time = stringifyTime(this.time.now - this.startTime)
           this.timerText.setText(time)
         }
@@ -361,6 +583,7 @@
           this.input.on('pointerdown', this.startGame, this)
 
           this.scene.launch('transition')
+          // this.scene.start('game', { level: 3 })
         }
 
         startGame() {
@@ -391,15 +614,15 @@
           // Bouton retour
           const graphics = this.make.graphics()
           graphics.fillStyle(0xffffff, 1)
-          graphics.fillRect(0, 0, 60, 60)
+          graphics.fillRect(0, 0, 40, 40)
           graphics.fillStyle(0x1d2b53, 1)
           graphics.beginPath()
-          graphics.moveTo(40, 20)
-          graphics.lineTo(40, 40)
-          graphics.lineTo(20, 30)
+          graphics.moveTo(30, 10)
+          graphics.lineTo(30, 30)
+          graphics.lineTo(10, 20)
           graphics.closePath()
           graphics.fillPath()
-          graphics.generateTexture('btnBack', 60, 60)
+          graphics.generateTexture('btnBack', 40, 40)
           graphics.destroy()
 
           const btnBack = this.add.sprite(40, 40, 'btnBack')
@@ -547,6 +770,7 @@
             [],
             this
           )
+          this.isUpKeyPressed = false
           this.isTransitionning = false
           this.playerWasStanding = false
           this.worldWidth = this.levelData.world.width
@@ -569,7 +793,7 @@
             hill.setScrollFactor(0.4)
           }
 
-          const cloudsPos = this.levelData.clouds.x ?? []
+          const cloudsPos = this.levelData.clouds?.x ?? []
           this.clouds = this.physics.add.group({
             allowGravity: false,
           })
@@ -589,6 +813,16 @@
           for (let i = 0; i < platformsPos.length; i++) {
             const { x, y, width, height } = platformsPos[i]
             this.addPlatform(platforms, x, y, width, height)
+          }
+
+          // Plateformes à sens unique
+          this.oneWayPlatforms = this.physics.add.group({
+            allowGravity: false,
+            immovable: true,
+          })
+          const oneWayPlatformsPos = this.levelData.oneWayPlatforms || []
+          for (let i = 0; i < oneWayPlatformsPos.length; i++) {
+            this.addOneWayPlatform(this.oneWayPlatforms, oneWayPlatformsPos[i])
           }
 
           // Créer le téléporteur et les particules
@@ -616,10 +850,11 @@
 
           // Plateformes sensibles
           this.fallingBlocks = this.physics.add.staticGroup()
+          this.fallingBlocksTriggers = this.physics.add.staticGroup()
           const fallingBlocksPos = this.levelData.fallingBlocks ?? []
           for (let i = 0; i < fallingBlocksPos.length; i++) {
             const { x, y } = fallingBlocksPos[i]
-            this.addFallingBlock(this.fallingBlocks, x, y)
+            this.addFallingBlock(this.fallingBlocks, this.fallingBlocksTriggers, x, y)
           }
 
           // Ennemis
@@ -654,17 +889,37 @@
             quantity: 5,
           })
 
+          // Mort du joueur
+          this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
+          this.enemiesCollider = this.physics.add.overlap(
+            this.enemies,
+            this.player,
+            this.handleEnemiesCollision,
+            undefined,
+            this
+          )
+
           // Ajouter la collision entre le joueur, les ennemis et le sol
           this.platformsCollider = this.physics.add.collider(this.player, platforms)
+          this.oneWayPlatformsCollider = this.physics.add.collider(
+            this.player,
+            this.oneWayPlatforms,
+            this.stickPlayerToPlatform,
+            null,
+            this
+          )
           this.physics.add.collider(this.enemies, platforms)
-          this.physics.add.collider(this.player, this.fallingBlocks, this.handleFallingBlockCollision, undefined, this)
+          this.fallingBlocksCollider = this.physics.add.collider(this.player, this.fallingBlocks)
+          this.fallingBlocksTriggers = this.physics.add.overlap(
+            this.player,
+            this.fallingBlocksTriggers,
+            this.handleFallingBlockCollision,
+            undefined,
+            this
+          )
 
           // Detection de fin de jeu
           this.physics.add.overlap(this.player, this.target, this.teleport, undefined, this)
-
-          // Mort du joueur
-          this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
-          this.physics.add.collider(this.enemies, this.player, this.handleEnemiesCollision, undefined, this)
 
           // Suivi de la caméra
           this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
@@ -726,6 +981,22 @@
               cloud.x = -120
             }
           })
+
+          // Plateformes mobiles
+          this.oneWayPlatforms
+            .getChildren()
+            .filter((platform) => platform.getData('isMoving'))
+            .forEach((platform) => {
+              const follower = platform.getData('follower')
+              follower.path.getPoint(follower.t, follower.vec)
+              follower.deltaX = follower.vec.x - platform.x
+              follower.deltaY = follower.vec.y - platform.y
+              platform.setPosition(follower.vec.x, follower.vec.y)
+              follower.t += 0.003
+              if (follower.t >= 1) {
+                follower.t = 0
+              }
+            })
 
           if (!this.canMove) return
 
@@ -789,9 +1060,10 @@
 
           // Gérer le saut progressif
           if (this.isJumping && this.isUpKeyPressed) {
-            const pressDuration = time - this.jumpStartTime
+            let pressDuration = time - this.jumpStartTime
             if (pressDuration > PLAYER_MAX_JUMP_TIME) {
               this.isJumping = false
+              pressDuration = PLAYER_MAX_JUMP_TIME
             }
 
             const t = pressDuration / PLAYER_MAX_JUMP_TIME
@@ -953,6 +1225,10 @@
           this.player.setData('isDead', true)
           this.canMove = false
           this.platformsCollider.active = false
+          this.oneWayPlatformsCollider.active = false
+          this.enemiesCollider.active = false
+          this.fallingBlocksCollider.active = false
+          this.fallingBlocksTriggers.active = false
           this.player.body.setVelocity(PLAYER_DEATH_JUMP_X * this.playerDir * -1, PLAYER_DEATH_JUMP_Y)
           this.time.delayedCall(1000, this.lose, [], this)
         }
@@ -977,6 +1253,42 @@
           group.add(platform)
         }
 
+        addOneWayPlatform(group, data) {
+          const { x, y, width, points } = data
+          const platform = this.add.rectangle(x, y, width, 20, 0xffccaa)
+          platform.setOrigin(0)
+          group.add(platform)
+          platform.body.checkCollision.down = false
+          platform.body.checkCollision.left = false
+          platform.body.checkCollision.right = false
+
+          if (!points) return
+          const path = new Phaser.Curves.Path(x, y)
+          for (let i = 0; i < points.length; i++) {
+            path.lineTo(points[i].x, points[i].y)
+          }
+
+          path.lineTo(x, y)
+          platform.setData('isMoving', true)
+          platform.setData('follower', {
+            path,
+            t: 0,
+            deltaX: 0,
+            deltaY: 0,
+            vec: new Phaser.Math.Vector2(),
+          })
+        }
+
+        stickPlayerToPlatform(player, platform) {
+          if (!platform.getData('isMoving')) return
+          const { deltaX, deltaY } = platform.getData('follower')
+          this.player.y += deltaY
+
+          if (this.player.body.velocity.x === 0 && player.body.touching.down) {
+            this.player.x += deltaX
+          }
+        }
+
         addSpike(group, x, y) {
           const spike = this.add.sprite(x, y, 'spike')
           spike.setOrigin(0)
@@ -986,15 +1298,20 @@
           group.add(spike)
         }
 
-        addFallingBlock(group, x, y) {
+        addFallingBlock(group, triggerGroup, x, y) {
           const fallingBlock = this.add.rectangle(x + 1, y, 38, 38, 0x5f574f)
           fallingBlock.setOrigin(0)
           group.add(fallingBlock)
+          const trigger = this.add.rectangle(x - 1, y - 1, 42, 42)
+          trigger.setOrigin(0)
+          trigger.setData('block', fallingBlock)
+          triggerGroup.add(trigger)
         }
 
-        handleFallingBlockCollision(player, fallingBlock) {
-          if (!player.body.touching.down || fallingBlock.getData('isTriggered')) return
-          fallingBlock.setData('isTriggered', true)
+        handleFallingBlockCollision(player, fallingBlockTrigger) {
+          const fallingBlock = fallingBlockTrigger.getData('block')
+          if (!player.body.blocked.down || fallingBlockTrigger.getData('isTriggered')) return
+          fallingBlockTrigger.setData('isTriggered', true)
 
           this.tweens.add({
             targets: fallingBlock,
@@ -1016,27 +1333,10 @@
               })
             },
           })
-
-          // Check des blocs à droite et à gauche du joueur à la main
-          const playerBottomHitbox = this.player.getBounds()
-          playerBottomHitbox.setPosition(playerBottomHitbox.x, playerBottomHitbox.y + 20)
-
-          this.fallingBlocks
-            .getChildren()
-            .filter((block) => {
-              const isTriggered = block.getData('isTriggered')
-              if (isTriggered) return false
-              console.log(playerBottomHitbox, block.getBounds())
-              return Phaser.Geom.Intersects.RectangleToRectangle(playerBottomHitbox, block.getBounds())
-            })
-            .forEach((block) => {
-              console.log('oui', block)
-              this.handleFallingBlockCollision(this.player, block)
-            })
         }
 
         handleEnemiesCollision(player, enemy) {
-          if (this.player.getData('isDead')) return
+          if (this.player.getData('isDead') || enemy.getData('isDead')) return
 
           if (player.body.touching.down && enemy.body.touching.up) {
             enemy.setData('isDead', true)
