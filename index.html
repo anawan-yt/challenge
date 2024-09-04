@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <title>Anawan - 1 abonné = 1 ligne de code</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#29adff" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.1/phaser.min.js"></script>
     <style>
       body {
@@ -170,7 +176,7 @@
             { x: 1480, y: 880, width: 280, height: 200 },
             { x: 1640, y: 0, width: 120, height: 720 },
             { x: 1640, y: 960, width: 600, height: 120 },
-            { x: 1640, y: 240, width: 1560, height: 360 },
+            { x: 1760, y: 240, width: 1440, height: 360 },
             { x: 2240, y: 880, width: 120, height: 200 },
             { x: 3080, y: 880, width: 680, height: 200 },
             { x: 3200, y: 240, width: 120, height: 520 },
@@ -181,21 +187,21 @@
             { x: 0, y: 760, width: 400 },
             {
               x: 800,
-              y: 680,
+              y: 690,
               width: 120,
-              points: [{ x: 1160, y: 680 }],
+              points: [{ x: 1160, y: 690 }],
             },
             {
               x: 2360,
-              y: 880,
+              y: 890,
               width: 120,
-              points: [{ x: 2600, y: 880 }],
+              points: [{ x: 2560, y: 890 }],
             },
             {
               x: 2960,
-              y: 880,
+              y: 890,
               width: 120,
-              points: [{ x: 2720, y: 880 }],
+              points: [{ x: 2760, y: 890 }],
             },
             { x: 3320, y: 740, width: 440 },
             {
@@ -245,6 +251,220 @@
             { x: 1600, y: 680 },
           ],
         },
+        level4: {
+          world: { width: 2400, height: 2400 },
+          player: { x: 400, y: 2240 },
+          target: { x: 1320, y: 2160 },
+          hills: [
+            { x: 0, y: 400 },
+            { x: 880, y: 320 },
+          ],
+          hillsFront: [{ x: 400, y: 860 }],
+          clouds: {
+            y: { min: 200, max: 320 },
+            x: [-100, 200, 740, 1440, 1600, 2000],
+          },
+          platforms: [
+            { x: 0, y: 0, width: 200, height: 2400 },
+            { x: 200, y: 2280, width: 2000, height: 120 },
+            { x: 1160, y: 640, width: 80, height: 1640 },
+            { x: 760, y: 2200, width: 200, height: 80 },
+            { x: 960, y: 2120, width: 200, height: 160 },
+            { x: 200, y: 1960, width: 760, height: 40 },
+            { x: 200, y: 1960, width: 760, height: 40 },
+            { x: 200, y: 1800, width: 200, height: 160 },
+            { x: 400, y: 1880, width: 200, height: 80 },
+            { x: 400, y: 1640, width: 760, height: 40 },
+            { x: 600, y: 1560, width: 80, height: 80 },
+            { x: 200, y: 1200, width: 760, height: 40 },
+            { x: 880, y: 840, width: 80, height: 360 },
+            { x: 880, y: 640, width: 80, height: 80 },
+            { x: 200, y: 1120, width: 200, height: 80 },
+            { x: 400, y: 600, width: 1640, height: 40 },
+            { x: 2200, y: 0, width: 200, height: 2400 },
+            { x: 600, y: 560, width: 40, height: 40 },
+            { x: 760, y: 520, width: 40, height: 80 },
+            { x: 920, y: 480, width: 40, height: 120 },
+            { x: 1440, y: 480, width: 40, height: 120 },
+            { x: 1400, y: 1200, width: 800, height: 40 },
+            { x: 1640, y: 960, width: 80, height: 240 },
+            { x: 1240, y: 1960, width: 760, height: 40 },
+            { x: 1240, y: 1480, width: 120, height: 480 },
+            { x: 1480, y: 1600, width: 120, height: 360 },
+            { x: 1720, y: 1720, width: 120, height: 240 },
+            { x: 1960, y: 1720, width: 40, height: 240 },
+          ],
+          oneWayPlatforms: [
+            { x: 960, y: 1960, width: 200 },
+            { x: 200, y: 1640, width: 200 },
+            {
+              x: 680,
+              y: 1480,
+              width: 120,
+              points: [{ x: 1040, y: 1480 }],
+            },
+            {
+              x: 1040,
+              y: 1360,
+              width: 120,
+              points: [{ x: 680, y: 1360 }],
+            },
+            { x: 960, y: 1200, width: 200 },
+            {
+              x: 1000,
+              y: 1120,
+              width: 120,
+              points: [{ x: 1000, y: 880 }],
+            },
+            {
+              x: 480,
+              y: 1020,
+              width: 120,
+              points: [{ x: 720, y: 1020 }],
+            },
+            {
+              x: 240,
+              y: 980,
+              width: 120,
+              points: [{ x: 240, y: 740 }],
+            },
+            { x: 200, y: 600, width: 200 },
+          ],
+          enemies: [
+            { x: 240, y: 1600 },
+            { x: 1200, y: 560 },
+            { x: 1200, y: 560, dir: -1 },
+            { x: 2120, y: 1920 },
+          ],
+          spikes: [
+            { x: 1120, y: 1920 },
+            { x: 920, y: 1920 },
+            { x: 880, y: 1920 },
+            { x: 560, y: 1840 },
+            { x: 400, y: 1840 },
+            { x: 200, y: 1760 },
+            { x: 680, y: 1600 },
+            { x: 720, y: 1600 },
+            { x: 760, y: 1600 },
+            { x: 800, y: 1600 },
+            { x: 840, y: 1600 },
+            { x: 880, y: 1600 },
+            { x: 920, y: 1600 },
+            { x: 960, y: 1600 },
+            { x: 1000, y: 1600 },
+            { x: 1040, y: 1600 },
+            { x: 1080, y: 1600 },
+            { x: 1120, y: 1600 },
+            { x: 840, y: 1160 },
+            { x: 800, y: 1160 },
+            { x: 760, y: 1160 },
+            { x: 720, y: 1160 },
+            { x: 680, y: 1160 },
+            { x: 640, y: 1160 },
+            { x: 600, y: 1160 },
+            { x: 560, y: 1160 },
+            { x: 520, y: 1160 },
+            { x: 480, y: 1160 },
+            { x: 440, y: 1160 },
+            { x: 400, y: 1160 },
+            { x: 640, y: 560 },
+            { x: 680, y: 560 },
+            { x: 720, y: 560 },
+            { x: 800, y: 560 },
+            { x: 840, y: 560 },
+            { x: 880, y: 560 },
+            { x: 2160, y: 1160 },
+            { x: 2120, y: 1160 },
+            { x: 2080, y: 1160 },
+            { x: 2040, y: 1160 },
+            { x: 2000, y: 1160 },
+            { x: 1960, y: 1160 },
+            { x: 1920, y: 1160 },
+            { x: 1880, y: 1160 },
+            { x: 1840, y: 1160 },
+            { x: 1800, y: 1160 },
+            { x: 1760, y: 1160 },
+            { x: 1720, y: 1160 },
+            { x: 1680, y: 920 },
+            { x: 1640, y: 920 },
+            { x: 1600, y: 1160 },
+            { x: 1560, y: 1160 },
+            { x: 1520, y: 1160 },
+            { x: 1480, y: 1160 },
+            { x: 1440, y: 1160 },
+            { x: 1400, y: 1160 },
+            { x: 1360, y: 1920 },
+            { x: 1400, y: 1920 },
+            { x: 1440, y: 1920 },
+            { x: 1600, y: 1920 },
+            { x: 1640, y: 1920 },
+            { x: 1680, y: 1920 },
+            { x: 1840, y: 1920 },
+            { x: 1880, y: 1920 },
+            { x: 1920, y: 1920 },
+          ],
+          spikyBalls: [
+            { x: 640, y: 960 },
+            { x: 200, y: 480 },
+            { x: 240, y: 480 },
+            { x: 280, y: 480 },
+            { x: 320, y: 480 },
+            { x: 360, y: 480 },
+            { x: 1600, y: 480 },
+            { x: 1720, y: 560 },
+            { x: 1840, y: 480 },
+            { x: 1960, y: 560 },
+            { x: 1400, y: 1440 },
+            { x: 1640, y: 1560 },
+            { x: 1880, y: 1680 },
+            { x: 1880, y: 2240 },
+            { x: 1880, y: 2200 },
+            { x: 1880, y: 2160 },
+            { x: 1880, y: 2000 },
+            { x: 1680, y: 2240 },
+            { x: 1680, y: 2080 },
+            { x: 1680, y: 2040 },
+            { x: 1680, y: 2000 },
+            { x: 1480, y: 2240 },
+            { x: 1480, y: 2200 },
+            { x: 1480, y: 2040 },
+            { x: 1480, y: 2000 },
+          ],
+          fallingBlocks: [
+            { x: 2040, y: 600 },
+            { x: 2080, y: 600 },
+            { x: 2120, y: 600 },
+            { x: 2160, y: 600 },
+            { x: 2080, y: 800 },
+            { x: 2120, y: 800 },
+            { x: 2160, y: 1000 },
+            { x: 2120, y: 1000 },
+            { x: 2080, y: 1000 },
+            { x: 2040, y: 1000 },
+            { x: 2000, y: 1000 },
+            { x: 1960, y: 1000 },
+            { x: 2000, y: 1000 },
+            { x: 1960, y: 1000 },
+            { x: 1840, y: 1000 },
+            { x: 1800, y: 1000 },
+            { x: 1520, y: 1000 },
+            { x: 1480, y: 1000 },
+            { x: 1240, y: 1200 },
+            { x: 1280, y: 1200 },
+            { x: 1320, y: 1200 },
+            { x: 1360, y: 1200 },
+            { x: 2000, y: 1720 },
+            { x: 2040, y: 1720 },
+            { x: 2080, y: 1720 },
+            { x: 2120, y: 1720 },
+            { x: 2160, y: 1720 },
+            { x: 2000, y: 1960 },
+            { x: 2040, y: 1960 },
+            { x: 2080, y: 1960 },
+            { x: 2120, y: 1960 },
+            { x: 2160, y: 1960 },
+          ],
+        },
       }
 
       const transitionEventsEmitter = new Phaser.Events.EventEmitter()
@@ -252,13 +472,13 @@
       function stringifyTime(elapsed) {
         const minutes = Math.floor(elapsed / 60000)
         const seconds = Math.floor((elapsed % 60000) / 1000)
-        const centiseconds = Math.floor((elapsed % 1000) / 10)
+        const centiseconds = Math.floor(elapsed % 1000)
         return (
           Phaser.Utils.String.Pad(minutes, 2, '0', 1) +
           "'" +
           Phaser.Utils.String.Pad(seconds, 2, '0', 1) +
           '"' +
-          Phaser.Utils.String.Pad(centiseconds, 2, '0', 1)
+          Phaser.Utils.String.Pad(centiseconds, 3, '0', 1)
         )
       }
 
@@ -325,6 +545,11 @@
         }
 
         startTransition() {
+          if (this.isOpen) {
+            this.input.keyboard.enabled = false
+            this.input.mouse.enabled = false
+          }
+
           const { width, height } = this.scale
 
           this.tweens.add({
@@ -340,6 +565,10 @@
             duration: 500,
             ease: 'Cubic.Out',
             onComplete: () => {
+              if (this.isOpen) {
+                this.input.keyboard.enabled = true
+                this.input.mouse.enabled = true
+              }
               transitionEventsEmitter.emit('end')
             },
           })
@@ -433,11 +662,13 @@
           const btnPause = this.add.sprite(900, 20, 'btnPause')
           btnPause.setOrigin(0).setInteractive()
           btnPause.on('pointerdown', this.togglePause, this)
+          this.input.keyboard.on('keydown-P', this.togglePause, this)
+          this.input.keyboard.on('keydown-ESC', this.togglePause, this)
 
           this.timerStarted = false
           this.startTime = 0
-          this.add.rectangle(0, 20, 160, 40, 0x1d2b53, 0.5).setOrigin(0)
-          this.timerText = this.add.text(20, 28, '00\'00"00', { fontSize: '24px', fill: '#ffffff' })
+          this.add.rectangle(0, 20, 170, 40, 0x1d2b53, 0.5).setOrigin(0)
+          this.timerText = this.add.text(20, 28, '00\'00"000', { fontSize: '24px', fill: '#ffffff' })
           const gameScene = this.scene.get('game')
           gameScene.events.on('startTimer', this.startTimer, this)
           gameScene.events.on('stopTimer', this.stopTimer, this)
@@ -499,11 +730,11 @@
         togglePause() {
           const isPaused = this.registry.get('isPaused')
           if (isPaused) {
-            game.scene.resume('game')
+            this.scene.resume('game')
             this.pauseTime = this.time.now - this.pauseTime
             this.startTime += this.pauseTime
           } else {
-            game.scene.pause('game')
+            this.scene.pause('game')
             this.pauseTime = this.time.now
           }
 
@@ -546,8 +777,6 @@
         }
 
         create() {
-          this.isStarted = false
-
           const text = this.add
             .text(
               480,
@@ -583,21 +812,11 @@
           this.input.on('pointerdown', this.startGame, this)
 
           this.scene.launch('transition')
-          // this.scene.start('game', { level: 3 })
         }
 
         startGame() {
-          if (this.isStarted) return
-          this.isStarted = true
-
           transitionEventsEmitter.emit('start')
-          transitionEventsEmitter.once(
-            'end',
-            () => {
-              this.scene.start('levels')
-            },
-            this
-          )
+          transitionEventsEmitter.once('end', () => this.scene.start('levels'), this)
         }
       }
 
@@ -684,13 +903,7 @@
           this.isStarted = true
 
           transitionEventsEmitter.emit('start')
-          transitionEventsEmitter.once(
-            'end',
-            () => {
-              this.scene.start(screen, params)
-            },
-            this
-          )
+          transitionEventsEmitter.once('end', () => this.scene.start(screen, params), this)
         }
       }
 
@@ -726,6 +939,19 @@
           graphics.generateTexture('spike', 40, 40)
           graphics.clear()
 
+          graphics.fillStyle(0xc2c3c7, 1)
+          graphics.beginPath()
+          graphics.moveTo(20, 1)
+          graphics.lineTo(39, 20)
+          graphics.lineTo(20, 39)
+          graphics.lineTo(1, 20)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.fillStyle(0x000000, 1)
+          graphics.fillCircle(20, 20, 15)
+          graphics.generateTexture('spikyBall', 40, 40)
+          graphics.clear()
+
           graphics.fillStyle(0xffffff, 1)
           graphics.fillCircle(30, 30, 30)
           graphics.fillCircle(50, 50, 30)
@@ -758,14 +984,12 @@
 
         create() {
           this.canMove = false
+          this.isReady = false
+          this.timerStarted = false
           this.time.delayedCall(
             500,
             () => {
-              if (!this.sys.game.device.os.desktop) {
-                this.input.once('pointerdown', this.startTimer, this)
-              } else {
-                this.input.keyboard.once('keydown', this.startTimer, this)
-              }
+              this.isReady = true
             },
             [],
             this
@@ -808,11 +1032,11 @@
           }
 
           // Plateformes
-          const platforms = this.physics.add.staticGroup()
+          this.platforms = this.physics.add.staticGroup()
           const platformsPos = this.levelData.platforms || []
           for (let i = 0; i < platformsPos.length; i++) {
             const { x, y, width, height } = platformsPos[i]
-            this.addPlatform(platforms, x, y, width, height)
+            this.addPlatform(this.platforms, x, y, width, height)
           }
 
           // Plateformes à sens unique
@@ -846,6 +1070,12 @@
           for (let i = 0; i < spikesPos.length; i++) {
             const { x, y } = spikesPos[i]
             this.addSpike(spikes, x, y)
+          }
+
+          const spikyBalls = this.physics.add.staticGroup()
+          const spikyBallsPos = this.levelData.spikyBalls ?? []
+          for (let i = 0; i < spikyBallsPos.length; i++) {
+            this.addspikyBall(spikyBalls, spikyBallsPos[i])
           }
 
           // Plateformes sensibles
@@ -891,6 +1121,7 @@
 
           // Mort du joueur
           this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
+          this.physics.add.overlap(this.player, spikyBalls, this.die, undefined, this)
           this.enemiesCollider = this.physics.add.overlap(
             this.enemies,
             this.player,
@@ -900,7 +1131,7 @@
           )
 
           // Ajouter la collision entre le joueur, les ennemis et le sol
-          this.platformsCollider = this.physics.add.collider(this.player, platforms)
+          this.platformsCollider = this.physics.add.collider(this.player, this.platforms)
           this.oneWayPlatformsCollider = this.physics.add.collider(
             this.player,
             this.oneWayPlatforms,
@@ -908,7 +1139,9 @@
             null,
             this
           )
-          this.physics.add.collider(this.enemies, platforms)
+          this.physics.add.collider(this.enemies, this.platforms)
+          this.physics.add.collider(this.enemies, this.oneWayPlatforms)
+          this.physics.add.collider(this.enemies, this.fallingBlocks)
           this.fallingBlocksCollider = this.physics.add.collider(this.player, this.fallingBlocks)
           this.fallingBlocksTriggers = this.physics.add.overlap(
             this.player,
@@ -933,6 +1166,7 @@
           this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
           this.input.keyboard.on('keyup-UP', this.resetJump, this)
           this.input.keyboard.on('keyup-Z', this.resetJump, this)
+          this.input.keyboard.on('keydown-R', this.restartGame, this)
 
           // Mobiles
           if (!this.sys.game.device.os.desktop) {
@@ -943,13 +1177,9 @@
           }
 
           // Limite horizontale du monde
-          this.events.on('postupdate', () => {
-            const playerHalfWidth = this.player.body.width / 2
-            if (this.player.x - playerHalfWidth < 0) {
-              this.player.x = playerHalfWidth
-            } else if (this.player.x + playerHalfWidth > this.physics.world.bounds.width) {
-              this.player.x = this.physics.world.bounds.width - playerHalfWidth
-            }
+          this.events.on('postupdate', this.checkWorldBounds, this)
+          this.events.once('shutdown', () => {
+            this.events.off('postupdate', this.checkWorldBounds)
           })
 
           // HUD
@@ -960,6 +1190,17 @@
         }
 
         update(time, delta) {
+          const justTriggeredJump =
+            Phaser.Input.Keyboard.JustDown(this.zKey) ||
+            Phaser.Input.Keyboard.JustDown(this.upKey) ||
+            Phaser.Input.Keyboard.JustDown(this.spaceKey)
+
+          const isGoingLeft = this.cursors.left.isDown || this.keys.Q.isDown || this.touchLeft
+          const isGoingRight = this.cursors.right.isDown || this.keys.D.isDown || this.touchRight
+
+          // Check du premier mouvement pour déclencher le timer
+          if (justTriggeredJump || isGoingLeft || isGoingRight) this.checkFirstMove()
+
           // Mouvement des ennemis
           this.enemies
             .getChildren()
@@ -983,20 +1224,7 @@
           })
 
           // Plateformes mobiles
-          this.oneWayPlatforms
-            .getChildren()
-            .filter((platform) => platform.getData('isMoving'))
-            .forEach((platform) => {
-              const follower = platform.getData('follower')
-              follower.path.getPoint(follower.t, follower.vec)
-              follower.deltaX = follower.vec.x - platform.x
-              follower.deltaY = follower.vec.y - platform.y
-              platform.setPosition(follower.vec.x, follower.vec.y)
-              follower.t += 0.003
-              if (follower.t >= 1) {
-                follower.t = 0
-              }
-            })
+          this.handleMovingPlatforms(time, delta)
 
           if (!this.canMove) return
 
@@ -1011,17 +1239,13 @@
           this.player.body.setVelocityX(0)
 
           // Gérer les mouvements à gauche et à droite
-          if (this.cursors.left.isDown || this.keys.Q.isDown || this.touchLeft) {
-            this.player.body.setVelocityX(-PLAYER_VELOCITY)
-          } else if (this.cursors.right.isDown || this.keys.D.isDown || this.touchRight) {
-            this.player.body.setVelocityX(PLAYER_VELOCITY)
+          if (isGoingLeft) {
+            this.player.body.setVelocityX(-PLAYER_VELOCITY + (this.stickedVelocityX < 0 ? this.stickedVelocityX : 0))
+          } else if (isGoingRight) {
+            this.player.body.setVelocityX(PLAYER_VELOCITY + (this.stickedVelocityX > 0 ? this.stickedVelocityX : 0))
           }
 
           // Z Bug, appel multiple de jump avec les events
-          const justTriggeredJump =
-            Phaser.Input.Keyboard.JustDown(this.zKey) ||
-            Phaser.Input.Keyboard.JustDown(this.upKey) ||
-            Phaser.Input.Keyboard.JustDown(this.spaceKey)
           if (justTriggeredJump) {
             this.jump()
           }
@@ -1030,6 +1254,12 @@
           if (this.playerWasStanding && !this.player.body.blocked.down) {
             this.playerWasStanding = false
             this.fallStartTime = this.time.now
+          } else if (
+            !this.playerWasStanding &&
+            this.jumpCount === 0 &&
+            this.time.now - this.fallStartTime >= PLAYER_COYOTE_TIME
+          ) {
+            this.jumpCount = 1
           } else if (!this.playerWasStanding && this.player.body.blocked.down && !justTriggeredJump) {
             this.playerWasStanding = true
             this.jumpCount = 0
@@ -1078,7 +1308,17 @@
           }
         }
 
+        checkWorldBounds() {
+          const playerHalfWidth = this.player.body.width / 2
+          if (this.player.x - playerHalfWidth < 0) {
+            this.player.x = playerHalfWidth
+          } else if (this.player.x + playerHalfWidth > this.physics.world.bounds.width) {
+            this.player.x = this.physics.world.bounds.width - playerHalfWidth
+          }
+        }
+
         startTimer() {
+          this.timerStarted = true
           this.canMove = true
           this.events.emit('startTimer')
         }
@@ -1086,6 +1326,7 @@
         handlePointerDown(pointer) {
           // Saut lors du touch sur la zone droite de l'écran
           if (pointer.x > 480) {
+            this.checkFirstMove()
             this.jump()
           }
 
@@ -1106,6 +1347,11 @@
           if (pointer.x > 300) return
           this.touchLeft = false
           this.touchRight = false
+        }
+
+        checkFirstMove() {
+          if (!this.isReady || this.timerStarted) return
+          this.startTimer()
         }
 
         resetJump() {
@@ -1206,13 +1452,7 @@
                 ease: 'Cubic.In',
                 onComplete: () => {
                   transitionEventsEmitter.emit('start')
-                  transitionEventsEmitter.once(
-                    'end',
-                    () => {
-                      this.scene.start('levels')
-                    },
-                    this
-                  )
+                  transitionEventsEmitter.once('end', () => this.scene.start('levels'), this)
                 },
               },
             },
@@ -1233,18 +1473,17 @@
           this.time.delayedCall(1000, this.lose, [], this)
         }
 
-        lose() {
+        restartGame() {
           if (this.isTransitionning) return
+          this.scene.pause('game')
 
           this.isTransitionning = true
           transitionEventsEmitter.emit('start')
-          transitionEventsEmitter.once(
-            'end',
-            () => {
-              this.scene.restart()
-            },
-            this
-          )
+          transitionEventsEmitter.once('end', () => this.scene.restart(), this)
+        }
+
+        lose() {
+          this.restartGame()
         }
 
         addPlatform(group, x, y, width, height) {
@@ -1273,20 +1512,13 @@
           platform.setData('follower', {
             path,
             t: 0,
-            deltaX: 0,
-            deltaY: 0,
             vec: new Phaser.Math.Vector2(),
           })
         }
 
         stickPlayerToPlatform(player, platform) {
-          if (!platform.getData('isMoving')) return
-          const { deltaX, deltaY } = platform.getData('follower')
-          this.player.y += deltaY
-
-          if (this.player.body.velocity.x === 0 && player.body.touching.down) {
-            this.player.x += deltaX
-          }
+          if (!platform.getData('isMoving') || player.getData('stickedPlafform')) return
+          player.setData('stickedPlatform', platform)
         }
 
         addSpike(group, x, y) {
@@ -1298,11 +1530,20 @@
           group.add(spike)
         }
 
+        addspikyBall(group, data) {
+          const { x, y } = data
+          const spikyBall = this.add.sprite(x, y, 'spikyBall')
+          spikyBall.setOrigin(0)
+          this.physics.add.existing(spikyBall, true)
+          spikyBall.body.setCircle(20)
+          group.add(spikyBall)
+        }
+
         addFallingBlock(group, triggerGroup, x, y) {
           const fallingBlock = this.add.rectangle(x + 1, y, 38, 38, 0x5f574f)
           fallingBlock.setOrigin(0)
           group.add(fallingBlock)
-          const trigger = this.add.rectangle(x - 1, y - 1, 42, 42)
+          const trigger = this.add.rectangle(x, y - 1, 40, 42)
           trigger.setOrigin(0)
           trigger.setData('block', fallingBlock)
           triggerGroup.add(trigger)
@@ -1358,9 +1599,11 @@
             this.jumpStartTime = this.time.now
             this.isUpKeyPressed = false
             this.playerWasStanding = true
-          } else {
-            this.die.call(this)
+
+            return
           }
+
+          this.die.call(this)
         }
 
         completePlayerTweens() {
@@ -1368,6 +1611,70 @@
           this.playerSprite.setScale(1)
           this.playerSprite.angle = 0
           this.playerSprite.y = 0
+        }
+
+        handleMovingPlatforms(time, delta) {
+          // Reset du stick plateforme
+          this.stickedPlatform = this.player.getData('stickedPlatform')
+          this.stickedVelocityX = 0
+          if (this.stickedPlatform && !this.player.body.touching.down) {
+            this.stickedPlatform = null
+            this.player.setData('stickedPlatform', null)
+          }
+
+          this.oneWayPlatforms
+            .getChildren()
+            .filter((platform) => platform.getData('isMoving'))
+            .forEach((platform) => {
+              const previousX = platform.x
+              const follower = platform.getData('follower')
+              follower.path.getPoint(follower.t, follower.vec)
+              const deltaX = follower.vec.x - platform.x
+              const deltaY = follower.vec.y - platform.y
+              platform.setPosition(follower.vec.x, follower.vec.y)
+              follower.t += delta / 5000
+              if (follower.t >= 1) {
+                follower.t = 0
+              }
+
+              // Déplacement du joueur avec la plateforme
+              if (this.stickedPlatform === platform) {
+                this.player.y += deltaY
+                this.stickedVelocityX = (platform.x - previousX) / (delta / 1000)
+                if (this.player.body.velocity.x === 0) {
+                  this.player.x += deltaX
+
+                  // Détection à la main des collisions
+                  if (
+                    this.player.x - this.player.body.halfWidth < this.stickedPlatform.x ||
+                    this.player.x + this.player.body.halfWidth > this.stickedPlatform.x
+                  ) {
+                    const x =
+                      this.stickedVelocityX > 0
+                        ? this.player.x + this.player.body.halfWidth
+                        : this.player.x - this.player.body.halfWidth - 10
+                    const rectDetection = new Phaser.Geom.Rectangle(x, this.player.y, 10, this.player.body.halfHeight)
+                    const collidingPlatforms = this.platforms
+                      .getChildren()
+                      .filter((platform) =>
+                        Phaser.Geom.Intersects.RectangleToRectangle(rectDetection, platform.getBounds())
+                      )
+
+                    if (collidingPlatforms.length) {
+                      const platformToCheck = collidingPlatforms[0]
+                      if (this.stickedVelocityX > 0 && this.player.x + this.player.body.halfWidth > platformToCheck.x) {
+                        this.player.x = platformToCheck.x - this.player.body.halfWidth
+                      } else if (
+                        this.stickedVelocityX < 0 &&
+                        this.player.x - this.player.body.halfWidth < platformToCheck.x + platformToCheck.width
+                      ) {
+                        this.player.x = platformToCheck.x + platformToCheck.width + this.player.body.halfWidth
+                      }
+                    }
+                  }
+                }
+              }
+            })
         }
       }
 
