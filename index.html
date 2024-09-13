@@ -69,7 +69,7 @@
             { x: 2580, y: 380, width: 120, height: 40 },
             { x: 2800, y: 280, width: 120, height: 40 },
           ],
-          enemies: [{ x: 2000, y: 500 }],
+          enemies: [{ x: 2000, y: 480 }],
           spikes: [
             { x: 1360, y: 460 },
             { x: 1400, y: 460 },
@@ -116,8 +116,8 @@
             { x: 3080, y: 680, width: 40, height: 40 },
           ],
           enemies: [
-            { x: 1400, y: 1000 },
-            { x: 1400, y: 1000, dir: -1 },
+            { x: 1400, y: 980 },
+            { x: 1400, y: 980, dir: -1 },
           ],
           spikes: [
             { x: 1800, y: 1000 },
@@ -224,7 +224,7 @@
             },
             { x: 3320, y: 240, width: 440 },
           ],
-          enemies: [{ x: 1720, y: 960 }],
+          enemies: [{ x: 1720, y: 940 }],
           spikes: [
             { x: 560, y: 720 },
             { x: 800, y: 800 },
@@ -255,6 +255,7 @@
           world: { width: 2400, height: 2400 },
           player: { x: 400, y: 2240 },
           target: { x: 1320, y: 2160 },
+          checkpoint: { x: 480, y: 540 },
           hills: [
             { x: 0, y: 400 },
             { x: 880, y: 320 },
@@ -510,7 +511,7 @@
         localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
       }
 
-      function unlockLevel(levelNum, time) {
+      function unlockLevel(levelNum, time = 0) {
         const unlockedLevels = getUnlockedLevels()
         if (unlockedLevels.some(({ level }) => level === levelNum)) return
 
@@ -519,6 +520,192 @@
           time,
         })
         localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+      }
+
+      function unlockAllLevels() {
+        let unlockedLevels = getUnlockedLevels()
+        const unlockedLevelSet = new Set(unlockedLevels.map((levelData) => levelData.level))
+        for (let level = 1; level <= Object.keys(levelsData).length; level++) {
+          if (!unlockedLevelSet.has(level)) {
+            unlockedLevels.push({ level, time: 0 })
+          }
+        }
+
+        localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+      }
+
+      function resetBestTimes() {
+        const unlockedLevels = getUnlockedLevels()
+        const resetTimesLevels = unlockedLevels.map((level) => ({ ...level, time: 0 }))
+        localStorage.setItem('unlockedLevels', JSON.stringify(resetTimesLevels))
+      }
+
+      class PreloaderScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'preloader' })
+        }
+
+        preload() {
+          this.load.setBaseURL('assets')
+
+          this.load.audio('music', 'audio/music.mp3')
+          this.load.audio('sfxJump', 'audio/sfx-jump.mp3')
+          this.load.audio('sfxHit', 'audio/sfx-hit.mp3')
+          this.load.audio('sfxDeath', 'audio/sfx-death.mp3')
+          this.load.audio('sfxWin', 'audio/sfx-win.mp3')
+          this.load.audio('sfxCheckpoint', 'audio/sfx-checkpoint.mp3')
+
+          const { width, height } = this.scale
+          const text = this.add
+            .text(width / 2, height / 2 - 24, 'Chargement...', { fontSize: '24px', fill: '#1d2b53' })
+            .setOrigin(0.5, 0.5)
+
+          const progressBox = this.add.graphics()
+          progressBox.lineStyle(4, 0x1d2b53)
+          progressBox.strokeRect(width / 2 - 102, height / 2, 204, 40)
+
+          this.progressBar = this.add.graphics()
+          this.load.on('progress', this.onProgress, this)
+        }
+
+        create() {
+          this.scene.start('intro')
+        }
+
+        onProgress(val) {
+          const { width, height } = this.scale
+          const [progressWidth, progressHeight] = [200, 38]
+
+          this.progressBar.clear()
+          this.progressBar.fillStyle(0x1d2b53, 1)
+          this.progressBar.fillRect(width / 2 - progressWidth / 2, height / 2, progressWidth * val, progressHeight)
+        }
+      }
+
+      class SettingsScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'settings' })
+        }
+
+        create() {
+          const btnBack = this.add.sprite(40, 40, 'btnBack')
+          btnBack.setInteractive()
+          btnBack.on('pointerdown', this.goBack, this)
+
+          const btnModeBg = this.add.rectangle(0, 0, 360, 80, 0xffffff)
+          this.btnModeText = this.add.text(0, 0, this.getModeText(), { fontSize: '24px', fill: '#1d2b53' })
+          Phaser.Display.Align.In.Center(this.btnModeText, btnModeBg)
+          const btnMode = this.add.container(480, 120, [btnModeBg, this.btnModeText])
+          btnMode.setSize(360, 80)
+          btnMode.setInteractive()
+          btnMode.on('pointerdown', this.handleChangeMode, this)
+
+          const btnSoundBg = this.add.rectangle(0, 0, 360, 80, 0xffffff)
+          this.btnSoundText = this.add.text(0, 0, this.getMuteStateText(), { fontSize: '24px', fill: '#1d2b53' })
+          Phaser.Display.Align.In.Center(this.btnSoundText, btnSoundBg)
+          const btnSound = this.add.container(480, 220, [btnSoundBg, this.btnSoundText])
+          btnSound.setSize(360, 80)
+          btnSound.setInteractive()
+          btnSound.on('pointerdown', this.handleToggleSound, this)
+
+          const btnUnlockBg = this.add.rectangle(0, 0, 360, 80, 0xffffff)
+          const btnUnlockText = this.add.text(0, 0, 'Débloquer les niveaux', { fontSize: '24px', fill: '#1d2b53' })
+          Phaser.Display.Align.In.Center(btnUnlockText, btnUnlockBg)
+          const btnUnlock = this.add.container(480, 320, [btnUnlockBg, btnUnlockText])
+          btnUnlock.setSize(360, 80)
+          btnUnlock.setInteractive()
+          btnUnlock.on('pointerdown', unlockAllLevels)
+
+          const btnResetTimesBg = this.add.rectangle(0, 0, 360, 80, 0xffffff)
+          const btnResetTimesText = this.add.text(0, 0, 'Reset meilleurs temps', { fontSize: '24px', fill: '#1d2b53' })
+          Phaser.Display.Align.In.Center(btnResetTimesText, btnResetTimesBg)
+          const btnResetTimes = this.add.container(480, 420, [btnResetTimesBg, btnResetTimesText])
+          btnResetTimes.setSize(360, 80)
+          btnResetTimes.setInteractive()
+          btnResetTimes.on('pointerdown', resetBestTimes)
+
+          this.scene.launch('transition')
+        }
+
+        getModeText() {
+          const mode = this.registry.get('mode')
+          return `Mode : ${mode === 'classic' ? 'Classique' : 'Speedrun'}`
+        }
+
+        getMuteStateText() {
+          const isMute = this.registry.get('mute')
+          return `Musique : ${isMute ? 'Non' : 'Oui'}`
+        }
+
+        handleChangeMode() {
+          let mode = this.registry.get('mode')
+          mode = mode === 'classic' ? 'speedrun' : 'classic'
+          this.registry.set('mode', mode)
+          localStorage.setItem('mode', mode)
+          this.btnModeText.setText(this.getModeText())
+        }
+
+        goBack() {
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once('end', () => this.scene.start('intro'), this)
+        }
+
+        handleToggleSound() {
+          this.scene.get('audio').toggleMute()
+          this.btnSoundText.setText(this.getMuteStateText())
+        }
+      }
+
+      class AudioScene extends Phaser.Scene {
+        constructor() {
+          super({ key: 'audio' })
+        }
+
+        create() {
+          const isMute = JSON.parse(localStorage.getItem('mute')) || false
+          this.registry.set('mute', isMute)
+          this.sound.mute = isMute
+
+          if (!this.sound.get('music')) {
+            this.backgroundMusic = this.sound.add('music', {
+              loop: true,
+            })
+            this.playMusic()
+
+            const sfxJump = this.sound.add('sfxJump', { volume: 0.5 })
+            const sfxHit = this.sound.add('sfxHit')
+            const sfxDeath = this.sound.add('sfxDeath')
+            const sfxWin = this.sound.add('sfxWin')
+            const sfxCheckpoint = this.sound.add('sfxCheckpoint')
+
+            this.sfx = {
+              sfxJump,
+              sfxHit,
+              sfxDeath,
+              sfxWin,
+              sfxCheckpoint,
+            }
+          }
+        }
+
+        playSfx(key) {
+          this.sfx[key]?.play()
+        }
+
+        playMusic() {
+          this.backgroundMusic.play()
+        }
+
+        pauseMusic() {
+          this.backgroundMusic.pause()
+        }
+
+        toggleMute() {
+          const isMute = this.registry.get('mute')
+          this.sound.mute = !isMute
+          this.registry.set('mute', !isMute)
+          localStorage.setItem('mute', !isMute)
+        }
       }
 
       class TransitionScene extends Phaser.Scene {
@@ -531,6 +718,7 @@
         }
 
         create() {
+          this.scene.bringToTop()
           const { width, height } = this.scale
 
           this.rect1 = this.add.rectangle(0, this.isOpen ? -height / 2 : 0, width, height / 2, 0x1d2b53)
@@ -546,7 +734,7 @@
 
         startTransition() {
           if (this.isOpen) {
-            this.input.keyboard.enabled = false
+            this.input.keyboard.manager.enabled = false
             this.input.mouse.enabled = false
           }
 
@@ -566,7 +754,7 @@
             ease: 'Cubic.Out',
             onComplete: () => {
               if (this.isOpen) {
-                this.input.keyboard.enabled = true
+                this.input.keyboard.manager.enabled = true
                 this.input.mouse.enabled = true
               }
               transitionEventsEmitter.emit('end')
@@ -665,10 +853,13 @@
           this.input.keyboard.on('keydown-P', this.togglePause, this)
           this.input.keyboard.on('keydown-ESC', this.togglePause, this)
 
+          const isSpeedrunMode = this.registry.get('mode') === 'speedrun'
           this.timerStarted = false
           this.startTime = 0
-          this.add.rectangle(0, 20, 170, 40, 0x1d2b53, 0.5).setOrigin(0)
+          const timerBg = this.add.rectangle(0, 20, 170, 40, 0x1d2b53, 0.5).setOrigin(0)
           this.timerText = this.add.text(20, 28, '00\'00"000', { fontSize: '24px', fill: '#ffffff' })
+          const timerContainer = this.add.container(0, 0, [timerBg, this.timerText])
+          timerContainer.setAlpha(isSpeedrunMode ? 1 : 0)
           const gameScene = this.scene.get('game')
           gameScene.events.on('startTimer', this.startTimer, this)
           gameScene.events.on('stopTimer', this.stopTimer, this)
@@ -735,6 +926,7 @@
             this.startTime += this.pauseTime
           } else {
             this.scene.pause('game')
+            this.scene.get('game').resetPointers()
             this.pauseTime = this.time.now
           }
 
@@ -743,7 +935,12 @@
         }
 
         stopTimer(currentLevel) {
-          if (!this.timerStarted) return
+          const isSpeedrunMode = this.registry.get('mode') === 'speedrun'
+          if (!this.timerStarted || !isSpeedrunMode) return
+
+          this.timerStarted = false
+
+          if (!currentLevel) return
 
           const levelInfo = getLevelInfo(currentLevel)
           if (!levelInfo) return
@@ -755,7 +952,6 @@
           }
 
           this.startTime = 0
-          this.timerStarted = false
         }
 
         startTimer() {
@@ -776,7 +972,36 @@
           super({ key: 'intro' })
         }
 
+        preload() {
+          const mode = localStorage.getItem('mode') || 'classic'
+          this.registry.set('mode', mode)
+
+          const graphics = this.make.graphics()
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.beginPath()
+          graphics.moveTo(30, 10)
+          graphics.lineTo(30, 30)
+          graphics.lineTo(10, 20)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('btnBack', 40, 40)
+          graphics.clear()
+
+          graphics.fillStyle(0xffffff, 1)
+          graphics.fillRect(0, 0, 40, 40)
+          graphics.fillStyle(0x1d2b53, 1)
+          graphics.fillTriangle(5, 27.5, 35, 27.5, 20, 5)
+          graphics.generateTexture('btnSettings', 40, 40)
+          graphics.destroy()
+        }
+
         create() {
+          const btnSettings = this.add.sprite(900, 20, 'btnSettings')
+          btnSettings.setOrigin(0).setInteractive()
+          btnSettings.on('pointerdown', this.goToSettings, this)
+
           const text = this.add
             .text(
               480,
@@ -812,6 +1037,13 @@
           this.input.on('pointerdown', this.startGame, this)
 
           this.scene.launch('transition')
+          this.scene.launch('audio')
+        }
+
+        goToSettings(pointer, localX, localY, event) {
+          event.stopPropagation()
+          transitionEventsEmitter.emit('start')
+          transitionEventsEmitter.once('end', () => this.scene.start('settings'), this)
         }
 
         startGame() {
@@ -826,23 +1058,9 @@
         }
 
         create() {
-          this.isStarted = false
           this.scene.stop('hud')
+          this.registry.set('isCheckpointActive', false)
           const unlockedLevels = getUnlockedLevels()
-
-          // Bouton retour
-          const graphics = this.make.graphics()
-          graphics.fillStyle(0xffffff, 1)
-          graphics.fillRect(0, 0, 40, 40)
-          graphics.fillStyle(0x1d2b53, 1)
-          graphics.beginPath()
-          graphics.moveTo(30, 10)
-          graphics.lineTo(30, 30)
-          graphics.lineTo(10, 20)
-          graphics.closePath()
-          graphics.fillPath()
-          graphics.generateTexture('btnBack', 40, 40)
-          graphics.destroy()
 
           const btnBack = this.add.sprite(40, 40, 'btnBack')
           btnBack.setInteractive()
@@ -882,7 +1100,8 @@
             }
 
             const time = (levelInfo && levelInfo.time) || 0
-            if (time) {
+            const mode = this.registry.get('mode')
+            if (time && mode === 'speedrun') {
               this.add.rectangle(x, timePosY, 100, 30, 0xffffff).setOrigin(0.5)
               this.add
                 .text(x, timePosY, time ? stringifyTime(levelInfo.time) : '10\'00"00', {
@@ -899,9 +1118,6 @@
         }
 
         goToScreen(screen, params = {}) {
-          if (this.isStarted) return
-          this.isStarted = true
-
           transitionEventsEmitter.emit('start')
           transitionEventsEmitter.once('end', () => this.scene.start(screen, params), this)
         }
@@ -985,7 +1201,12 @@
         create() {
           this.canMove = false
           this.isReady = false
+          this.touchLeft = false
+          this.touchRight = false
           this.timerStarted = false
+          this.isCheckpointActive = this.registry.get('isCheckpointActive')
+          this.isSpeedrunMode = this.registry.get('mode') === 'speedrun'
+          this.audioManager = this.scene.get('audio')
           this.time.delayedCall(
             500,
             () => {
@@ -1093,14 +1314,31 @@
           for (let i = 0; i < enemiesPos.length; i++) {
             const { x, y, dir } = enemiesPos[i]
             const enemy = this.add.rectangle(x, y, 40, 40, 0xff004d)
-            enemy.setOrigin(0.5, 1)
             enemy.setData('dir', dir ?? 1)
             this.physics.add.existing(enemy)
             this.enemies.add(enemy)
           }
 
+          // Checkpoint
+          if (this.levelData.checkpoint && !this.isSpeedrunMode) {
+            const pole = this.add.rectangle(0, 0, 10, 120, 0xc2c3c7)
+            this.checkpointFlag = this.add
+              .triangle(45, pole.height / 2 - 4 - (this.isCheckpointActive ? 60 : 0), 0, -20, 40, 0, 0, 20, 0xffa300)
+              .setOrigin(1, 0.5)
+            this.checkpoint = this.add.container(this.levelData.checkpoint.x, this.levelData.checkpoint.y, [
+              pole,
+              this.checkpointFlag,
+            ])
+            this.physics.add.existing(this.checkpoint, true)
+            this.checkpoint.body.setSize(pole.width, pole.height)
+            this.checkpoint.body.setOffset(26, -28)
+          }
+
           // Créer le joueur
-          this.player = this.add.container(this.levelData.player.x, this.levelData.player.y)
+          const startingPos = this.isCheckpointActive
+            ? { x: this.levelData.checkpoint.x - 40, y: this.levelData.checkpoint.y }
+            : this.levelData.player
+          this.player = this.add.container(startingPos.x, startingPos.y)
           this.playerSprite = this.add.rectangle(0, 0, 40, 40, 0xfff1e8)
           this.player.add(this.playerSprite)
           this.player.setSize(40, 40)
@@ -1108,6 +1346,16 @@
           this.jumpCount = 0
           this.playerDir = 1
           this.prevVelocityY = 0
+
+          this.playerShadowHitbox = this.add.rectangle(
+            this.levelData.player.x,
+            this.levelData.player.y,
+            40,
+            40,
+            0xfff1e8,
+            0
+          )
+          this.physics.add.existing(this.playerShadowHitbox, true)
 
           // Particules du joueur lors du saut
           this.playerEmitter = this.add.particles(0, 0, 'particleJump', {
@@ -1151,8 +1399,13 @@
             this
           )
 
+          // Détection checkpoint
+          if (this.levelData.checkpoint && !this.isCheckpointActive) {
+            this.physics.add.overlap(this.player, this.checkpoint, this.handleCheckpoint, null, this)
+          }
+
           // Detection de fin de jeu
-          this.physics.add.overlap(this.player, this.target, this.teleport, undefined, this)
+          this.targetTrigger = this.physics.add.overlap(this.player, this.target, this.teleport, undefined, this)
 
           // Suivi de la caméra
           this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
@@ -1166,14 +1419,14 @@
           this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE)
           this.input.keyboard.on('keyup-UP', this.resetJump, this)
           this.input.keyboard.on('keyup-Z', this.resetJump, this)
-          this.input.keyboard.on('keydown-R', this.restartGame, this)
+          this.input.keyboard.on('keydown-R', this.handlRestartToggle, this)
 
           // Mobiles
           if (!this.sys.game.device.os.desktop) {
             // Pointers
             this.input.on('pointerdown', this.handlePointerDown, this)
             this.input.on('pointermove', this.handlePointerMove, this)
-            this.input.on('pointerup', this.resetPointers, this)
+            this.input.on('pointerup', this.handlePointerUp, this)
           }
 
           // Limite horizontale du monde
@@ -1304,7 +1557,7 @@
 
           // Sortie du monde
           if (this.player.y - this.player.body.height / 2 > this.physics.world.bounds.height) {
-            this.lose.call(this)
+            this.die.call(this)
           }
         }
 
@@ -1343,8 +1596,12 @@
           }
         }
 
-        resetPointers(pointer) {
+        handlePointerUp(pointer) {
           if (pointer.x > 300) return
+          this.resetPointers()
+        }
+
+        resetPointers() {
           this.touchLeft = false
           this.touchRight = false
         }
@@ -1363,17 +1620,26 @@
         jump() {
           if (!this.canMove) return
           this.isUpKeyPressed = true
+
+          const shouldDoubleJump =
+            !this.player.body.blocked.down && this.jumpCount > 0 && this.jumpCount < PLAYER_MAX_JUMPS
+          let playerAlmostLanded = false
+          if (shouldDoubleJump && this.player.body.velocity.y > 0) {
+            playerAlmostLanded = this.checkPlayerRightAbovePlatform()
+          }
+
           if (
             this.player.body.blocked.down ||
             (!this.player.body.blocked.down &&
               this.time.now - this.fallStartTime < PLAYER_COYOTE_TIME &&
               this.jumpCount === 0) ||
-            (!this.player.body.blocked.down && this.jumpCount > 0 && this.jumpCount < PLAYER_MAX_JUMPS)
+            (shouldDoubleJump && !playerAlmostLanded)
           ) {
             this.jumpCount++
             this.isJumping = true
             this.jumpStartTime = this.time.now
             this.completePlayerTweens()
+            this.audioManager.playSfx('sfxJump')
 
             if (this.jumpCount === 1) {
               this.tweens.add({
@@ -1402,10 +1668,23 @@
           }
         }
 
+        checkPlayerRightAbovePlatform() {
+          const platformsToCheck = [
+            ...this.platforms.getChildren(),
+            ...this.oneWayPlatforms.getChildren(),
+            ...this.fallingBlocks.getChildren(),
+          ]
+          this.playerShadowHitbox.x = this.player.x
+          this.playerShadowHitbox.y = this.player.y + 40
+          this.playerShadowHitbox.body.updateFromGameObject()
+          return this.physics.overlap(this.playerShadowHitbox, this.platforms)
+        }
+
         teleport() {
           this.canMove = false
           this.player.body.enable = false
           this.events.emit('stopTimer', this.currentLevel)
+          this.audioManager.playSfx('sfxWin')
 
           if (this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
             unlockLevel(this.currentLevel + 1)
@@ -1469,13 +1748,21 @@
           this.enemiesCollider.active = false
           this.fallingBlocksCollider.active = false
           this.fallingBlocksTriggers.active = false
+          this.targetTrigger = false
+          this.cameras.main.stopFollow()
+          this.audioManager.playSfx('sfxDeath')
+          this.events.emit('stopTimer')
           this.player.body.setVelocity(PLAYER_DEATH_JUMP_X * this.playerDir * -1, PLAYER_DEATH_JUMP_Y)
           this.time.delayedCall(1000, this.lose, [], this)
         }
 
+        handlRestartToggle() {
+          if (this.player.getData('isDead')) return
+          this.restartGame()
+        }
+
         restartGame() {
           if (this.isTransitionning) return
-          this.scene.pause('game')
 
           this.isTransitionning = true
           transitionEventsEmitter.emit('start')
@@ -1579,7 +1866,13 @@
         handleEnemiesCollision(player, enemy) {
           if (this.player.getData('isDead') || enemy.getData('isDead')) return
 
-          if (player.body.touching.down && enemy.body.touching.up) {
+          const dx = player.x - enemy.x
+          const dy = player.y - enemy.y
+
+          const angle = Math.atan2(dy, dx)
+          const angleDeg = Phaser.Math.RadToDeg(angle)
+
+          if (angleDeg <= -45 && angleDeg >= -135) {
             enemy.setData('isDead', true)
             enemy.body.setVelocityX(0)
 
@@ -1599,6 +1892,7 @@
             this.jumpStartTime = this.time.now
             this.isUpKeyPressed = false
             this.playerWasStanding = true
+            this.audioManager.playSfx('sfxHit')
 
             return
           }
@@ -1611,6 +1905,20 @@
           this.playerSprite.setScale(1)
           this.playerSprite.angle = 0
           this.playerSprite.y = 0
+        }
+
+        handleCheckpoint() {
+          if (this.isCheckpointActive && !this.player.getData('isDead')) return
+          this.isCheckpointActive = true
+          this.registry.set('isCheckpointActive', true)
+
+          this.audioManager.playSfx('sfxCheckpoint')
+          this.tweens.add({
+            targets: this.checkpointFlag,
+            y: this.checkpointFlag.y - 60,
+            duration: 1000,
+            ease: 'Cubic.Out',
+          })
         }
 
         handleMovingPlatforms(time, delta) {
@@ -1698,7 +2006,16 @@
         input: {
           activePointers: 3,
         },
-        scene: [IntroScene, LevelsScene, GameScene, HUDScene, TransitionScene],
+        scene: [
+          PreloaderScene,
+          IntroScene,
+          LevelsScene,
+          GameScene,
+          HUDScene,
+          TransitionScene,
+          AudioScene,
+          SettingsScene,
+        ],
       }
 
       const game = new Phaser.Game(config)
