@@ -22,8 +22,7 @@
     <script>
       // GA
       GameAnalytics('setEnabledInfoLog', true)
-      GameAnalytics('setEnabledVerboseLog', true)
-      GameAnalytics('configureBuild', '0.0.10')
+      GameAnalytics('configureBuild', '0.0.11')
       // GameAnalytics('initialize', 'xxx', 'xxx')
 
       // Globales
@@ -40,9 +39,13 @@
       const PLAYER_DEATH_JUMP_Y = -600
       const PLAYER_FALL_SQUASH_VELOCITY = 700
       const ENEMY_VELOCITY = 140
+      const ENEMY2_JUMP_DELAY = 2000
       const NUM_LEVELS = 8
       const SPIKY_BALL_SPEED = 200
       const TILE_SIZE = 40
+      const COIN_SIZE = 30
+      const CANNON_FIRE_RATE = 1400
+      const FIREBALL_VELOCITY = 360
       const PLAYER_MODE_PLATFORM = 'platform'
       const PLAYER_MODE_FLAPPY = 'flappy'
       const ANALYTICS_ENEMY_KILLED = 'enemy:killed'
@@ -85,16 +88,16 @@
             { x: 2580, y: 380, width: 120, height: 40 },
             { x: 2800, y: 280, width: 120, height: 40 },
           ],
-          enemies: [{ x: 2000, y: 480 }],
+          enemies: [{ x: 2000, y: 440 }],
           spikes: [
             { x: 1360, y: 460, num: 2 },
             { x: 1580, y: 460 },
           ],
           coins: [
-            { x: 820, y: 360, numX: 3 },
-            { x: 1460, y: 480, numX: 3 },
-            { x: 2090, y: 320, numY: 3 },
-            { x: 2600, y: 360, numX: 3 },
+            { x: 800, y: 340, numX: 3 },
+            { x: 1440, y: 460, numX: 3 },
+            { x: 2070, y: 300, numY: 3 },
+            { x: 2580, y: 340, numX: 3 },
           ],
         },
         level2: {
@@ -151,14 +154,14 @@
             { x: 2600, y: 840, num: 6 },
           ],
           coins: [
-            { x: 640, y: 760, numX: 2 },
-            { x: 840, y: 760, numX: 2 },
-            { x: 1820, y: 940, numX: 4 },
-            { x: 2620, y: 820, numX: 2 },
-            { x: 2780, y: 820, numX: 2 },
-            { x: 2700, y: 1020, numX: 2 },
-            { x: 3100, y: 900 },
-            { x: 2940, y: 780 },
+            { x: 620, y: 740, numX: 2 },
+            { x: 820, y: 740, numX: 2 },
+            { x: 1800, y: 920, numX: 4 },
+            { x: 2600, y: 800, numX: 2 },
+            { x: 2760, y: 800, numX: 2 },
+            { x: 2680, y: 1000, numX: 2 },
+            { x: 3080, y: 880 },
+            { x: 2920, y: 760 },
           ],
         },
         level3: {
@@ -237,7 +240,7 @@
             },
             { x: 3320, y: 240, width: 440 },
           ],
-          enemies: [{ x: 1720, y: 940 }],
+          enemies: [{ x: 1720, y: 920 }],
           spikes: [
             { x: 560, y: 720 },
             { x: 800, y: 800, num: 12 },
@@ -246,10 +249,10 @@
           ],
           fallingBlocks: [{ x: 1480, y: 680, num: 4 }],
           coins: [
-            { x: 900, y: 660, numX: 8 },
-            { x: 2000, y: 740, numY: 3 },
-            { x: 2680, y: 780, numX: 3 },
-            { x: 3260, y: 140, numX: 2 },
+            { x: 880, y: 640, numX: 8 },
+            { x: 1980, y: 720, numY: 3 },
+            { x: 2660, y: 760, numX: 3 },
+            { x: 3240, y: 120, numX: 2 },
           ],
         },
         level4: {
@@ -393,18 +396,18 @@
             { x: 2000, y: 1960, num: 5 },
           ],
           coins: [
-            { x: 900, y: 1860, numX: 2 },
-            { x: 480, y: 1860, numX: 2 },
-            { x: 1020, y: 680, numX: 3 },
-            { x: 260, y: 1100, numX: 3 },
-            { x: 620, y: 540 },
-            { x: 780, y: 500 },
-            { x: 940, y: 460 },
-            { x: 2100, y: 780, numX: 2 },
-            { x: 1820, y: 980, numX: 2 },
-            { x: 1500, y: 980, numX: 2 },
-            { x: 1520, y: 1580, numX: 2 },
-            { x: 1760, y: 1700, numX: 2 },
+            { x: 880, y: 1840, numX: 2 },
+            { x: 460, y: 1840, numX: 2 },
+            { x: 1000, y: 660, numX: 3 },
+            { x: 240, y: 1080, numX: 3 },
+            { x: 600, y: 520 },
+            { x: 760, y: 480 },
+            { x: 920, y: 440 },
+            { x: 2080, y: 760, numX: 2 },
+            { x: 1800, y: 960, numX: 2 },
+            { x: 1480, y: 960, numX: 2 },
+            { x: 1500, y: 1560, numX: 2 },
+            { x: 1740, y: 1680, numX: 2 },
           ],
         },
         level5: {
@@ -431,10 +434,10 @@
             x: [-100, 200, 740, 1440, 1600, 2000],
           },
           transformers: [
-            { x: 1320, y: 1400, height: 280, pos: 1, mode: PLAYER_MODE_FLAPPY },
-            { x: 2640, y: 1240, height: 280, pos: 1 },
-            { x: 4040, y: 840, height: 200, pos: 1, mode: PLAYER_MODE_FLAPPY },
-            { x: 6400, y: 1000, height: 200, pos: 1 },
+            { x: 1350, y: 1400, height: 280, mode: PLAYER_MODE_FLAPPY },
+            { x: 2670, y: 1240, height: 280 },
+            { x: 4070, y: 840, height: 200, mode: PLAYER_MODE_FLAPPY },
+            { x: 6430, y: 1000, height: 200 },
           ],
           platforms: [
             { x: 0, y: 0, width: 200, height: 2000 },
@@ -535,18 +538,205 @@
           ],
           enemies: [{ x: 3320, y: 1160 }],
           coins: [
-            { x: 860, y: 1340, numX: 2 },
-            { x: 1020, y: 1340, numX: 2 },
-            { x: 1180, y: 1340, numX: 2 },
-            { x: 1720, y: 1320, numX: 3 },
-            { x: 2200, y: 1500, numX: 3 },
-            { x: 3460, y: 1340, numX: 2 },
-            { x: 3460, y: 1340, numX: 2 },
-            { x: 3740, y: 940, numX: 2 },
-            { x: 3980, y: 940, numX: 2 },
-            { x: 4660, y: 900, numY: 2 },
-            { x: 5060, y: 940, numY: 2 },
-            { x: 6340, y: 1100, numX: 2 },
+            { x: 840, y: 1320, numX: 2 },
+            { x: 1000, y: 1320, numX: 2 },
+            { x: 1160, y: 1320, numX: 2 },
+            { x: 1700, y: 1320, numX: 3 },
+            { x: 2180, y: 1480, numX: 3 },
+            { x: 3440, y: 1320, numX: 2 },
+            { x: 3440, y: 1320, numX: 2 },
+            { x: 3720, y: 920, numX: 2 },
+            { x: 3960, y: 920, numX: 2 },
+            { x: 4640, y: 880, numY: 2 },
+            { x: 5040, y: 920, numY: 2 },
+            { x: 6320, y: 1080, numX: 2 },
+          ],
+        },
+        level6: {
+          world: { width: 10000, height: 2400 },
+          player: { x: 400, y: 2200 },
+          target: { x: 9880, y: 920 },
+          checkpoint: { x: 4960, y: 500 },
+          hills: [
+            { x: 120, y: 300 },
+            { x: 600, y: 120 },
+            { x: 800, y: 240 },
+            { x: 1600, y: 300 },
+            { x: 2000, y: 80 },
+            { x: 3200, y: 80 },
+          ],
+          hillsFront: [
+            { x: -200, y: 500 },
+            { x: 700, y: 400 },
+            { x: 1600, y: 500 },
+            { x: 2000, y: 300 },
+            { x: 2600, y: 400 },
+            { x: 3900, y: 440 },
+          ],
+          clouds: {
+            y: { min: 160, max: 280 },
+            x: [-100, 200, 800, 1440, 1600, 2000, 2500, 2800, 3400, 4100, 4900, 5800],
+          },
+          platforms: [
+            { x: 0, y: 0, width: 760, height: 2000 },
+            { x: 760, y: 0, width: 40, height: 1200 },
+            { x: 760, y: 1240, width: 40, height: 760 },
+            { x: 0, y: 2000, width: 200, height: 240 },
+            { x: 0, y: 2240, width: 1280, height: 160 },
+            { x: 1280, y: 600, width: 40, height: 200 },
+            { x: 1280, y: 840, width: 40, height: 1560 },
+            { x: 1320, y: 600, width: 760, height: 1800 },
+            { x: 800, y: 2120, width: 480, height: 120 },
+            { x: 800, y: 0, width: 1280, height: 160 },
+            { x: 2080, y: 0, width: 80, height: 240 },
+            { x: 2080, y: 520, width: 280, height: 1880 },
+            { x: 2360, y: 640, width: 760, height: 1760 },
+            { x: 3120, y: 520, width: 160, height: 1880 },
+            { x: 3280, y: 400, width: 160, height: 2000 },
+            { x: 3760, y: 0, width: 40, height: 400 },
+            { x: 3760, y: 440, width: 40, height: 240 },
+            { x: 3440, y: 1040, width: 1120, height: 1360 },
+            { x: 3800, y: 0, width: 440, height: 680 },
+            { x: 4560, y: 640, width: 200, height: 1760 },
+            { x: 4760, y: 560, width: 400, height: 40 },
+            { x: 4760, y: 600, width: 360, height: 40 },
+            { x: 4760, y: 640, width: 400, height: 1760 },
+            { x: 5160, y: 640, width: 800, height: 1760 },
+            { x: 5160, y: 0, width: 40, height: 400 },
+            { x: 5200, y: 0, width: 40, height: 440 },
+            { x: 5240, y: 0, width: 640, height: 480 },
+            { x: 5880, y: 0, width: 40, height: 440 },
+            { x: 5920, y: 0, width: 40, height: 400 },
+            { x: 5960, y: 560, width: 120, height: 1840 },
+            { x: 6080, y: 0, width: 40, height: 400 },
+            { x: 6120, y: 0, width: 40, height: 440 },
+            { x: 6160, y: 0, width: 640, height: 480 },
+            { x: 6080, y: 640, width: 800, height: 1760 },
+            { x: 6800, y: 0, width: 40, height: 440 },
+            { x: 6840, y: 0, width: 40, height: 400 },
+            { x: 6880, y: 560, width: 240, height: 40 },
+            { x: 6920, y: 600, width: 200, height: 40 },
+            { x: 6880, y: 640, width: 240, height: 1760 },
+            { x: 7120, y: 640, width: 80, height: 1760 },
+            { x: 7200, y: 600, width: 40, height: 1800 },
+            { x: 7240, y: 680, width: 80, height: 1720 },
+            { x: 7320, y: 640, width: 40, height: 1760 },
+            { x: 7360, y: 680, width: 80, height: 1720 },
+            { x: 7440, y: 640, width: 40, height: 1760 },
+            { x: 7480, y: 680, width: 80, height: 1720 },
+            { x: 7560, y: 640, width: 40, height: 1760 },
+            { x: 7600, y: 680, width: 80, height: 1720 },
+            { x: 7680, y: 640, width: 40, height: 1760 },
+            { x: 7720, y: 680, width: 80, height: 1720 },
+            { x: 7800, y: 640, width: 40, height: 1760 },
+            { x: 8000, y: 0, width: 160, height: 800 },
+            { x: 7840, y: 1040, width: 440, height: 1360 },
+            { x: 8160, y: 0, width: 40, height: 760 },
+            { x: 8280, y: 1080, width: 40, height: 1320 },
+            { x: 8320, y: 1040, width: 480, height: 1360 },
+            { x: 8200, y: 0, width: 200, height: 800 },
+            { x: 8400, y: 0, width: 40, height: 760 },
+            { x: 8440, y: 0, width: 360, height: 800 },
+            { x: 8800, y: 0, width: 40, height: 760 },
+            { x: 8800, y: 1080, width: 40, height: 1320 },
+            { x: 8840, y: 0, width: 40, height: 720 },
+            { x: 8840, y: 1120, width: 40, height: 1280 },
+            { x: 8880, y: 0, width: 1120, height: 680 },
+            { x: 8880, y: 1160, width: 1120, height: 1240 },
+          ],
+          oneWayPlatforms: [
+            {
+              x: 4240,
+              y: 570,
+              width: 120,
+              points: [{ x: 4640, y: 570 }],
+            },
+          ],
+          transformers: [
+            { x: 800, y: 1990, width: 480, mode: PLAYER_MODE_FLAPPY },
+            { x: 2120, y: 240, height: 280 },
+            { x: 3440, y: 560, width: 320 },
+            { x: 4240, y: 640, width: 320 },
+            { x: 8770, y: 800, height: 240, mode: PLAYER_MODE_FLAPPY },
+          ],
+          fallingBlocks: [{ x: 7840, y: 640, num: 4 }],
+          spikyBalls: [
+            { x: 880, y: 1600 },
+            { x: 1160, y: 1600 },
+            { x: 1520, y: 360 },
+            { x: 1680, y: 360 },
+            { x: 9080, y: 880 },
+            { x: 9080, y: 920 },
+            { x: 9480, y: 760 },
+            { x: 9480, y: 800 },
+            { x: 9480, y: 1000 },
+            { x: 9480, y: 1040 },
+          ],
+          spikes: [
+            { x: 800, y: 160, num: 32, dir: 2 },
+            { x: 1280, y: 560, num: 20 },
+            { x: 2080, y: 240, dir: 2 },
+            { x: 2080, y: 480 },
+            { x: 3440, y: 1000, num: 28 },
+            { x: 3760, y: 680, num: 12, dir: 2 },
+            { x: 4560, y: 600, num: 5 },
+            { x: 5160, y: 400, dir: 2 },
+            { x: 5200, y: 440, dir: 2 },
+            { x: 5240, y: 480, num: 16, dir: 2 },
+            { x: 5880, y: 440, dir: 2 },
+            { x: 5920, y: 400, dir: 2 },
+            { x: 6080, y: 400, dir: 2 },
+            { x: 6120, y: 440, dir: 2 },
+            { x: 6160, y: 480, num: 16, dir: 2 },
+            { x: 6800, y: 440, dir: 2 },
+            { x: 6840, y: 400, dir: 2 },
+            { x: 7120, y: 600, num: 2 },
+            { x: 7240, y: 640, num: 2 },
+            { x: 7360, y: 640, num: 2 },
+            { x: 7480, y: 640, num: 2 },
+            { x: 7600, y: 640, num: 2 },
+            { x: 7560, y: 600 },
+            { x: 7720, y: 640, num: 2 },
+            { x: 8720, y: 800, dir: 2 },
+            { x: 8720, y: 1000 },
+            { x: 8800, y: 760, dir: 2 },
+            { x: 8800, y: 1040 },
+            { x: 8840, y: 720, dir: 2 },
+            { x: 8840, y: 1080 },
+            { x: 8880, y: 680, dir: 2, num: 28 },
+            { x: 8880, y: 1120, num: 28 },
+          ],
+          cannons: [
+            { x: 760, y: 1200, dir: 2 },
+            { x: 1280, y: 800, dir: 4 },
+            { x: 3760, y: 400, dir: 4 },
+            { x: 5120, y: 600, dir: 2 },
+            { x: 6880, y: 600, dir: 4 },
+            { x: 8160, y: 760, dir: 3 },
+            { x: 8280, y: 1040, dir: 1 },
+            { x: 8400, y: 760, dir: 3 },
+          ],
+          enemies: [
+            { x: 2360, y: 600, type: 2, jumps: 9 },
+            { x: 3080, y: 600, type: 2, jumps: 9, dir: -1 },
+          ],
+          coins: [
+            { x: 800, y: 1600, numX: 2 },
+            { x: 1200, y: 1600, numX: 2 },
+            { x: 1560, y: 360, numX: 3 },
+            { x: 2680, y: 600, numX: 3 },
+            { x: 3920, y: 840, numX: 4 },
+            { x: 4440, y: 440, numX: 3 },
+            { x: 5400, y: 520, numX: 2 },
+            { x: 5640, y: 520, numX: 2 },
+            { x: 6000, y: 320, numY: 3 },
+            { x: 6320, y: 520, numX: 2 },
+            { x: 6560, y: 520, numX: 2 },
+            { x: 8200, y: 880, numX: 2 },
+            { x: 8320, y: 880, numX: 2 },
+            { x: 9080, y: 800, numY: 2 },
+            { x: 9080, y: 960, numY: 2 },
+            { x: 9480, y: 840, numY: 4 },
           ],
         },
       }
@@ -1185,7 +1375,6 @@
 
           this.scene.launch('transition')
           this.scene.launch('audio')
-          // this.scene.start('game', { level: 5 })
         }
 
         goToSettings(pointer, localX, localY, event) {
@@ -1313,6 +1502,11 @@
           graphics.generateTexture('particleCoin', 10, 10)
           graphics.clear()
 
+          graphics.fillStyle(0xffa300, 1)
+          graphics.fillCircle(10, 10, 10)
+          graphics.generateTexture('fireball', 20, 20)
+          graphics.clear()
+
           graphics.fillStyle(0xc2c3c7, 1)
           graphics.beginPath()
           graphics.moveTo(0, 40)
@@ -1321,6 +1515,16 @@
           graphics.closePath()
           graphics.fillPath()
           graphics.generateTexture('spike', 40, 40)
+          graphics.clear()
+
+          graphics.fillStyle(0xff004d, 1)
+          graphics.beginPath()
+          graphics.moveTo(0, 40)
+          graphics.lineTo(20, 0)
+          graphics.lineTo(40, 40)
+          graphics.closePath()
+          graphics.fillPath()
+          graphics.generateTexture('enemy2', 40, 40)
           graphics.clear()
 
           graphics.fillStyle(0xc2c3c7, 1)
@@ -1439,6 +1643,17 @@
             this.addOneWayPlatform(this.oneWayPlatforms, oneWayPlatformsPos[i])
           }
 
+          // Canons
+          this.cannons = this.physics.add.staticGroup()
+          const cannonsPos = this.levelData.cannons || []
+          for (let i = 0; i < cannonsPos.length; i++) {
+            this.addCannon(this.cannons, cannonsPos[i])
+          }
+
+          this.fireballs = this.physics.add.group({
+            allowGravity: false,
+          })
+
           // Créer le téléporteur et les particules
           const particles = this.add.particles(this.levelData.target.x, this.levelData.target.y, 'particle', {
             speed: { min: -100, max: 100 },
@@ -1490,11 +1705,7 @@
           this.enemies = this.physics.add.group()
           const enemiesPos = this.levelData.enemies ?? []
           for (let i = 0; i < enemiesPos.length; i++) {
-            const { x, y, dir } = enemiesPos[i]
-            const enemy = this.add.rectangle(x, y, 40, 40, 0xff004d)
-            enemy.setData('dir', dir ?? 1)
-            this.physics.add.existing(enemy)
-            this.enemies.add(enemy)
+            this.addEnemy(this.enemies, enemiesPos[i])
           }
 
           // Pièces
@@ -1564,6 +1775,7 @@
 
           // Mort du joueur
           this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
+          this.physics.add.overlap(this.player, this.fireballs, this.die, undefined, this)
           this.physics.add.overlap(this.player, spikyBalls, this.die, undefined, this)
           this.enemiesCollider = this.physics.add.overlap(
             this.enemies,
@@ -1574,7 +1786,9 @@
           )
 
           // Ajouter la collision entre le joueur, les ennemis et le sol
+          this.physics.add.overlap(this.platforms, this.fireballs, this.destroyFireball, undefined, this)
           this.platformsCollider = this.physics.add.collider(this.player, this.platforms)
+          this.cannonsCollider = this.physics.add.collider(this.player, this.cannons)
           this.oneWayPlatformsCollider = this.physics.add.collider(
             this.player,
             this.oneWayPlatforms,
@@ -1672,13 +1886,20 @@
             .filter((enemy) => !enemy.getData('isDead'))
             .forEach((enemy) => {
               let dir = enemy.getData('dir')
-              if (enemy.body.touching.right) {
-                dir = -1
-              } else if (enemy.body.touching.left) {
-                dir = 1
+
+              if (enemy.getData('type') === 2) {
+                if (enemy.body.blocked.down) {
+                  enemy.body.setVelocityX(0)
+                }
+              } else {
+                if (enemy.body.touching.right) {
+                  dir = -1
+                } else if (enemy.body.touching.left) {
+                  dir = 1
+                }
+                enemy.setData('dir', dir)
+                enemy.body.setVelocityX(ENEMY_VELOCITY * dir)
               }
-              enemy.setData('dir', dir)
-              enemy.body.setVelocityX(ENEMY_VELOCITY * dir)
             })
 
           // Reset des nuages
@@ -1690,6 +1911,14 @@
 
           // Plateformes mobiles
           this.handleMovingPlatforms(time, delta)
+
+          // Tirs de cannons
+          this.cannons.getChildren().forEach((cannon) => {
+            if (time >= cannon.getData('lastFired') + CANNON_FIRE_RATE) {
+              this.shoot(cannon)
+              cannon.setData('lastFired', time)
+            }
+          })
 
           if (!this.canMove) return
 
@@ -1788,6 +2017,22 @@
           // Sortie du monde
           if (this.player.y - this.player.body.height / 2 > this.physics.world.bounds.height) {
             this.die.call(this)
+          }
+        }
+
+        destroyFireball(player, fireball) {
+          fireball.destroy()
+        }
+
+        shoot(cannon) {
+          const dir = cannon.getData('dir')
+          const fireball = this.fireballs.get(cannon.x + TILE_SIZE / 2, cannon.y + TILE_SIZE / 2, 'fireball')
+          fireball.body.setCircle(6)
+          fireball.body.setOffset(4, 4)
+          if (dir === 1 || dir === 3) {
+            fireball.setVelocityY(FIREBALL_VELOCITY * (dir === 1 ? -1 : 1))
+          } else {
+            fireball.setVelocityX(FIREBALL_VELOCITY * (dir === 2 ? 1 : -1))
           }
         }
 
@@ -1991,6 +2236,7 @@
           this.player.setData('isDead', true)
           this.canMove = false
           this.platformsCollider.active = false
+          this.cannonsCollider.active = false
           this.oneWayPlatformsCollider.active = false
           this.enemiesCollider.active = false
           this.fallingBlocksCollider.active = false
@@ -2036,16 +2282,27 @@
           group.add(platform)
         }
 
+        addCannon(group, data) {
+          const { x, y, dir = 2 } = data
+          const cannon = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0x1d2b53)
+          cannon.setOrigin(0)
+          cannon.setData('lastFired', 0)
+          cannon.setData('dir', dir)
+          group.add(cannon)
+        }
+
         addCoin(group, data) {
           const { x, y, numX = 1, numY = 1 } = data
           for (let i = 0; i < Math.max(numX, numY); i++) {
             const isHorizontal = numX >= numY
-            const coin = this.add.circle(
-              x + (isHorizontal ? TILE_SIZE * i : 0),
-              y + (isHorizontal ? 0 : TILE_SIZE * i),
-              15,
-              0xffec27
-            )
+            const coin = this.add
+              .circle(
+                x + (isHorizontal ? TILE_SIZE * i : 0) + (TILE_SIZE - COIN_SIZE) / 2,
+                y + (isHorizontal ? 0 : TILE_SIZE * i) + (TILE_SIZE - COIN_SIZE) / 2,
+                COIN_SIZE / 2,
+                0xffec27
+              )
+              .setOrigin(0)
             this.physics.add.existing(coin, true)
             coin.body.setCircle(10)
             coin.body.setOffset(5, 5)
@@ -2129,11 +2386,50 @@
           group.add(spikyBall)
         }
 
-        addTransformer(group, data) {
-          const { x, y, width = 10, height = 10, pos = 0, mode = PLAYER_MODE_PLATFORM } = data
-          const newX = x + (width === 10 && pos === 1 ? 30 : 0)
+        addEnemy(group, data) {
+          const { x, y, dir = 1, type = 1, jumps = 1 } = data
+          let enemy
 
-          this.add.particles(newX, y, 'particleTransformer', {
+          if (type === 2) {
+            enemy = this.add.sprite(x, y, 'enemy2').setOrigin(0)
+            enemy.setData('jumpCount', 0)
+          } else {
+            enemy = this.add.rectangle(x, y, 40, 40, 0xff004d).setOrigin(0)
+          }
+
+          enemy.setData('dir', dir)
+          enemy.setData('type', type)
+
+          this.physics.add.existing(enemy)
+          if (type === 2) {
+            enemy.body.setCircle(enemy.displayWidth / 3)
+            enemy.body.setOffset(enemy.displayWidth / 6, enemy.displayWidth / 3)
+            this.time.addEvent({
+              callbackScope: this,
+              delay: ENEMY2_JUMP_DELAY,
+              loop: true,
+              callback: () => {
+                let jumpCount = enemy.getData('jumpCount') + 1
+                let dir = enemy.getData('dir')
+                if (jumpCount > jumps) {
+                  dir *= -1
+                  jumpCount = 1
+                }
+                enemy.body.setVelocity(123 * dir, -520)
+                enemy.setData('jumpCount', jumpCount)
+                enemy.setData('dir', dir)
+              },
+            })
+          }
+
+          this.enemies.add(enemy)
+        }
+
+        addTransformer(group, data) {
+          const { x, y, width = 10, height = 10, mode = PLAYER_MODE_PLATFORM } = data
+          const isHorizontal = height === 10
+
+          this.add.particles(x, y, 'particleTransformer', {
             speed: { min: -20, max: 20 },
             scale: { min: 0.6, max: 1 },
             alpha: { start: 1, end: 0 },
@@ -2141,18 +2437,29 @@
             frequency: 100,
             quantity: 5,
             emitZone: {
-              source: new Phaser.Geom.Rectangle(-width / 2, 0, width, height),
+              source: new Phaser.Geom.Rectangle(0, 0, width, height),
               type: 'random',
             },
           })
-          this.add.rectangle(newX, y, width, height, 0x83769c).setOrigin(0.5, 0)
+          this.add.rectangle(x, y, width, height, 0x83769c).setOrigin(0)
 
-          const transformerLeft = this.add.rectangle(newX + TILE_SIZE / 2, y, 1, height, 0x83769c, 0).setOrigin(0.5, 0)
-          transformerLeft.setData('mode', mode)
-          group.add(transformerLeft)
-          const transformerRight = this.add.rectangle(newX - TILE_SIZE / 2, y, 1, height, 0x83769c, 0).setOrigin(0.5, 0)
-          transformerRight.setData('mode', mode === PLAYER_MODE_PLATFORM ? PLAYER_MODE_FLAPPY : PLAYER_MODE_PLATFORM)
-          group.add(transformerRight)
+          const hitboxWidth = isHorizontal ? width : 1
+          const hitboxHeight = isHorizontal ? 1 : height
+          const hitboxBeforeX = isHorizontal ? x : x + TILE_SIZE / 2 + width
+          const hitboxBeforeY = isHorizontal ? y - TILE_SIZE / 2 : y
+          const hitboxBefore = this.add
+            .rectangle(hitboxBeforeX, hitboxBeforeY, hitboxWidth, hitboxHeight, 0x83769c, 0)
+            .setOrigin(0)
+          hitboxBefore.setData('mode', mode)
+          group.add(hitboxBefore)
+
+          const hitboxAfterX = isHorizontal ? x : x - TILE_SIZE / 2
+          const hitboxAfterY = isHorizontal ? y + TILE_SIZE / 2 + height : y
+          const hitboxAfter = this.add
+            .rectangle(hitboxAfterX, hitboxAfterY, hitboxWidth, hitboxHeight, 0x83769c, 0)
+            .setOrigin(0)
+          hitboxAfter.setData('mode', mode === PLAYER_MODE_PLATFORM ? PLAYER_MODE_FLAPPY : PLAYER_MODE_PLATFORM)
+          group.add(hitboxAfter)
         }
 
         addFallingBlock(group, triggerGroup, data) {
@@ -2207,13 +2514,12 @@
         handleEnemiesCollision(player, enemy) {
           if (this.player.getData('isDead') || enemy.getData('isDead')) return
 
-          const dx = player.x - enemy.x
-          const dy = player.y - enemy.y
+          const dx = player.x - enemy.x - TILE_SIZE / 2
+          const dy = player.y - enemy.y - TILE_SIZE / 2
 
           const angle = Math.atan2(dy, dx)
           const angleDeg = Phaser.Math.RadToDeg(angle)
-
-          if (angleDeg <= -45 && angleDeg >= -135) {
+          if (angleDeg <= -45 && angleDeg >= -135 && enemy.getData('type') === 1) {
             enemy.setData('isDead', true)
             enemy.body.setVelocityX(0)
 
