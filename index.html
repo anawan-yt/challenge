@@ -22,7 +22,7 @@
     <script>
       // GA
       GameAnalytics('setEnabledInfoLog', true)
-      GameAnalytics('configureBuild', '0.0.11')
+      GameAnalytics('configureBuild', '0.0.12')
       // GameAnalytics('initialize', 'xxx', 'xxx')
 
       // Globales
@@ -256,158 +256,142 @@
           ],
         },
         level4: {
-          world: { width: 2400, height: 2400 },
-          player: { x: 400, y: 2240 },
-          target: { x: 1320, y: 2160 },
-          checkpoint: { x: 480, y: 540 },
+          world: { width: 7200, height: 2400 },
+          player: { x: 400, y: 1120 },
+          target: { x: 6320, y: 320 },
           hills: [
-            { x: 0, y: 400 },
-            { x: 880, y: 320 },
+            { x: 120, y: 360 },
+            { x: 800, y: 280 },
+            { x: 1400, y: 320 },
+            { x: 1600, y: 400 },
           ],
-          hillsFront: [{ x: 400, y: 860 }],
+          hillsFront: [
+            { x: -100, y: 480 },
+            { x: 800, y: 360 },
+            { x: 2600, y: 400 },
+          ],
           clouds: {
-            y: { min: 200, max: 320 },
-            x: [-100, 200, 740, 1440, 1600, 2000],
+            y: { min: 160, max: 280 },
+            x: [-100, 200, 800, 1440, 1600, 2000, 2500, 2800, 3400, 4100, 4900, 5800],
           },
           platforms: [
-            { x: 0, y: 0, width: 200, height: 2400 },
-            { x: 200, y: 2280, width: 2000, height: 120 },
-            { x: 1160, y: 640, width: 80, height: 1640 },
-            { x: 760, y: 2200, width: 200, height: 80 },
-            { x: 960, y: 2120, width: 200, height: 160 },
-            { x: 200, y: 1960, width: 760, height: 40 },
-            { x: 200, y: 1960, width: 760, height: 40 },
-            { x: 200, y: 1800, width: 200, height: 160 },
-            { x: 400, y: 1880, width: 200, height: 80 },
-            { x: 400, y: 1640, width: 760, height: 40 },
-            { x: 600, y: 1560, width: 80, height: 80 },
-            { x: 200, y: 1200, width: 760, height: 40 },
-            { x: 880, y: 840, width: 80, height: 360 },
-            { x: 880, y: 640, width: 80, height: 80 },
-            { x: 200, y: 1120, width: 200, height: 80 },
-            { x: 400, y: 600, width: 1640, height: 40 },
-            { x: 2200, y: 0, width: 200, height: 2400 },
-            { x: 600, y: 560, width: 40, height: 40 },
-            { x: 760, y: 520, width: 40, height: 80 },
-            { x: 920, y: 480, width: 40, height: 120 },
-            { x: 1440, y: 480, width: 40, height: 120 },
-            { x: 1400, y: 1200, width: 800, height: 40 },
-            { x: 1640, y: 960, width: 80, height: 240 },
-            { x: 1240, y: 1960, width: 760, height: 40 },
-            { x: 1240, y: 1480, width: 120, height: 480 },
-            { x: 1480, y: 1600, width: 120, height: 360 },
-            { x: 1720, y: 1720, width: 120, height: 240 },
-            { x: 1960, y: 1720, width: 40, height: 240 },
+            { x: 0, y: 1200, width: 920, height: 320 },
+            { x: 920, y: 1120, width: 120, height: 400 },
+            { x: 920, y: 1120, width: 120, height: 400 },
+            { x: 1040, y: 1160, width: 400, height: 360 },
+            { x: 1440, y: 880, width: 160, height: 640 },
+            { x: 1600, y: 1080, width: 800, height: 440 },
+            { x: 2400, y: 880, width: 160, height: 640 },
+            { x: 2560, y: 1000, width: 640, height: 520 },
+            { x: 3200, y: 880, width: 160, height: 640 },
+            { x: 3520, y: 400, width: 160, height: 1000 },
+            { x: 0, y: 1520, width: 4080, height: 320 },
+            { x: 4080, y: 720, width: 120, height: 1120 },
+            { x: 4200, y: 880, width: 120, height: 960 },
+            { x: 4320, y: 1040, width: 120, height: 880 },
+            { x: 4440, y: 1200, width: 600, height: 720 },
+            { x: 5040, y: 1040, width: 1000, height: 880 },
+            { x: 5040, y: 400, width: 80, height: 440 },
+            { x: 5120, y: 400, width: 80, height: 480 },
+            { x: 5200, y: 400, width: 600, height: 520 },
+            { x: 6040, y: 880, width: 880, height: 1040 },
+            { x: 5800, y: 400, width: 800, height: 320 },
+            { x: 6920, y: 0, width: 400, height: 1560 },
+            { x: 5200, y: 0, width: 600, height: 400 },
           ],
           oneWayPlatforms: [
-            { x: 960, y: 1960, width: 200 },
-            { x: 200, y: 1640, width: 200 },
             {
-              x: 680,
-              y: 1480,
+              x: 1600,
+              y: 890,
               width: 120,
-              points: [{ x: 1040, y: 1480 }],
+              points: [{ x: 1800, y: 890 }],
             },
             {
-              x: 1040,
-              y: 1360,
+              x: 2240,
+              y: 890,
               width: 120,
-              points: [{ x: 680, y: 1360 }],
+              points: [{ x: 2040, y: 890 }],
             },
-            { x: 960, y: 1200, width: 200 },
-            {
-              x: 1000,
-              y: 1120,
-              width: 120,
-              points: [{ x: 1000, y: 880 }],
-            },
-            {
-              x: 480,
-              y: 1020,
-              width: 120,
-              points: [{ x: 720, y: 1020 }],
-            },
-            {
-              x: 240,
-              y: 980,
-              width: 120,
-              points: [{ x: 240, y: 740 }],
-            },
-            { x: 200, y: 600, width: 200 },
-          ],
-          enemies: [
-            { x: 240, y: 1600 },
-            { x: 1200, y: 560 },
-            { x: 1200, y: 560, dir: -1 },
-            { x: 2120, y: 1920 },
-          ],
-          spikes: [
-            { x: 1120, y: 1920 },
-            { x: 880, y: 1920, num: 2 },
-            { x: 560, y: 1840 },
-            { x: 400, y: 1840 },
-            { x: 200, y: 1760 },
-            { x: 680, y: 1600, num: 12 },
-            { x: 400, y: 1160, num: 12 },
-            { x: 640, y: 560, num: 3 },
-            { x: 800, y: 560, num: 3 },
-            { x: 1720, y: 1160, num: 12 },
-            { x: 1640, y: 920, num: 2 },
-            { x: 1400, y: 1160, num: 6 },
-            { x: 1360, y: 1920, num: 3 },
-            { x: 1600, y: 1920, num: 3 },
-            { x: 1840, y: 1920, num: 3 },
-          ],
-          spikyBalls: [
-            { x: 640, y: 960 },
-            { x: 200, y: 480 },
-            { x: 240, y: 480 },
-            { x: 280, y: 480 },
-            { x: 320, y: 480 },
-            { x: 360, y: 480 },
-            { x: 1600, y: 480 },
-            { x: 1720, y: 560 },
-            { x: 1840, y: 480 },
-            { x: 1960, y: 560 },
-            { x: 1400, y: 1440 },
-            { x: 1640, y: 1560 },
-            { x: 1880, y: 1680 },
-            { x: 1880, y: 2240 },
-            { x: 1880, y: 2200 },
-            { x: 1880, y: 2160 },
-            { x: 1880, y: 2000 },
-            { x: 1680, y: 2240 },
-            { x: 1680, y: 2080 },
-            { x: 1680, y: 2040 },
-            { x: 1680, y: 2000 },
-            { x: 1480, y: 2240 },
-            { x: 1480, y: 2200 },
-            { x: 1480, y: 2040 },
-            { x: 1480, y: 2000 },
+            { x: 3680, y: 1360, width: 400 },
+            { x: 3680, y: 1200, width: 400 },
+            { x: 3680, y: 1040, width: 400 },
+            { x: 3680, y: 880, width: 400 },
+            { x: 3680, y: 720, width: 400 },
+            { x: 5800, y: 880, width: 240 },
+            { x: 6800, y: 720, width: 120 },
+            { x: 6800, y: 560, width: 120 },
+            { x: 6800, y: 400, width: 120 },
           ],
           fallingBlocks: [
-            { x: 2040, y: 600, num: 4 },
-            { x: 2080, y: 800, num: 2 },
-            { x: 1960, y: 1000, num: 6 },
-            { x: 1800, y: 1000, num: 2 },
-            { x: 1480, y: 1000, num: 2 },
-            { x: 1240, y: 1200, num: 4 },
-            { x: 2000, y: 1720, num: 5 },
-            { x: 2000, y: 1960, num: 5 },
+            { x: 1120, y: 1040, num: 2 },
+            { x: 1280, y: 960, num: 2 },
+            { x: 4240, y: 760 },
+            { x: 4360, y: 920 },
+            { x: 4480, y: 1080 },
+            { x: 4640, y: 1080 },
+            { x: 4800, y: 1080 },
+            { x: 4960, y: 1080 },
           ],
           coins: [
-            { x: 880, y: 1840, numX: 2 },
-            { x: 460, y: 1840, numX: 2 },
-            { x: 1000, y: 660, numX: 3 },
-            { x: 240, y: 1080, numX: 3 },
-            { x: 600, y: 520 },
-            { x: 760, y: 480 },
-            { x: 920, y: 440 },
-            { x: 2080, y: 760, numX: 2 },
-            { x: 1800, y: 960, numX: 2 },
-            { x: 1480, y: 960, numX: 2 },
-            { x: 1500, y: 1560, numX: 2 },
-            { x: 1740, y: 1680, numX: 2 },
+            { x: 1120, y: 1000, numX: 2 },
+            { x: 1280, y: 920, numX: 2 },
+            { x: 1960, y: 720 },
+            { x: 1960, y: 840 },
+            { x: 3400, y: 1160, numY: 3 },
+            { x: 3440, y: 1160, numY: 3 },
+            { x: 4560, y: 1000 },
+            { x: 4720, y: 1000 },
+            { x: 4880, y: 1000 },
+            { x: 5320, y: 960 },
+            { x: 5360, y: 920 },
+            { x: 5400, y: 960 },
+            { x: 5840, y: 320, numX: 2 },
+            { x: 5840, y: 280, numX: 2 },
+            { x: 5840, y: 240, numX: 2 },
+          ],
+          enemies: [
+            { x: 2560, y: 960 },
+            { x: 2680, y: 960 },
+            { x: 2800, y: 960 },
+            { x: 2920, y: 960, dir: -1 },
+            { x: 3040, y: 960, dir: -1 },
+            { x: 3160, y: 960, dir: -1 },
+            { x: 3680, y: 1160 },
+            { x: 3680, y: 840 },
+            { x: 4040, y: 840, dir: -1 },
+          ],
+          spikyBalls: [
+            { x: 1720, y: 800 },
+            { x: 1720, y: 760 },
+            { x: 1720, y: 720 },
+            { x: 1960, y: 800 },
+            { x: 1960, y: 760 },
+            { x: 2200, y: 800 },
+            { x: 2200, y: 760 },
+            { x: 2200, y: 720 },
+            { x: 3680, y: 1320, points: [{ x: 4040, y: 1320 }] },
+            { x: 4040, y: 1000, points: [{ x: 3680, y: 1000 }] },
+            { x: 6200, y: 720, points: [{ x: 6200, y: 840 }], startAt: 0.3 },
+            { x: 6240, y: 720, points: [{ x: 6240, y: 840 }], startAt: 0.25 },
+            { x: 6280, y: 720, points: [{ x: 6280, y: 840 }], startAt: 0.2 },
+            { x: 6320, y: 720, points: [{ x: 6320, y: 840 }], startAt: 0.15 },
+            { x: 6360, y: 720, points: [{ x: 6360, y: 840 }], startAt: 0.1 },
+          ],
+          spikes: [
+            { x: 1040, y: 1120, num: 10 },
+            { x: 1600, y: 1040, num: 20 },
+            { x: 3480, y: 400, dir: 3, num: 25 },
+            { x: 3360, y: 880, dir: 1, num: 16 },
+            { x: 4200, y: 840, num: 3 },
+            { x: 4320, y: 1000, num: 3 },
+            { x: 4440, y: 1160, num: 15 },
+            { x: 5040, y: 840, num: 2, dir: 2 },
+            { x: 5120, y: 880, num: 2, dir: 2 },
+            { x: 5200, y: 920, num: 2, dir: 2 },
+            { x: 5360, y: 1000 },
+            { x: 5520, y: 920, dir: 2, num: 2 },
+            { x: 5800, y: 720, dir: 1, num: 4 },
+            { x: 6000, y: 920, dir: 3, num: 3 },
           ],
         },
         level5: {
@@ -739,6 +723,161 @@
             { x: 9480, y: 840, numY: 4 },
           ],
         },
+        level7: {
+          world: { width: 2400, height: 2400 },
+          player: { x: 400, y: 2240 },
+          target: { x: 1320, y: 2160 },
+          checkpoint: { x: 480, y: 540 },
+          hills: [
+            { x: 0, y: 400 },
+            { x: 880, y: 320 },
+          ],
+          hillsFront: [{ x: 400, y: 860 }],
+          clouds: {
+            y: { min: 200, max: 320 },
+            x: [-100, 200, 740, 1440, 1600, 2000],
+          },
+          platforms: [
+            { x: 0, y: 0, width: 200, height: 2400 },
+            { x: 200, y: 2280, width: 2000, height: 120 },
+            { x: 1160, y: 640, width: 80, height: 1640 },
+            { x: 760, y: 2200, width: 200, height: 80 },
+            { x: 960, y: 2120, width: 200, height: 160 },
+            { x: 200, y: 1960, width: 760, height: 40 },
+            { x: 200, y: 1960, width: 760, height: 40 },
+            { x: 200, y: 1800, width: 200, height: 160 },
+            { x: 400, y: 1880, width: 200, height: 80 },
+            { x: 400, y: 1640, width: 760, height: 40 },
+            { x: 600, y: 1560, width: 80, height: 80 },
+            { x: 200, y: 1200, width: 760, height: 40 },
+            { x: 880, y: 840, width: 80, height: 360 },
+            { x: 880, y: 640, width: 80, height: 80 },
+            { x: 200, y: 1120, width: 200, height: 80 },
+            { x: 400, y: 600, width: 1640, height: 40 },
+            { x: 2200, y: 0, width: 200, height: 2400 },
+            { x: 600, y: 560, width: 40, height: 40 },
+            { x: 760, y: 520, width: 40, height: 80 },
+            { x: 920, y: 480, width: 40, height: 120 },
+            { x: 1440, y: 480, width: 40, height: 120 },
+            { x: 1400, y: 1200, width: 800, height: 40 },
+            { x: 1640, y: 960, width: 80, height: 240 },
+            { x: 1240, y: 1960, width: 720, height: 40 },
+            { x: 1240, y: 1480, width: 120, height: 480 },
+            { x: 1480, y: 1600, width: 120, height: 360 },
+            { x: 1720, y: 1720, width: 120, height: 240 },
+            { x: 1960, y: 1720, width: 40, height: 280 },
+          ],
+          oneWayPlatforms: [
+            { x: 960, y: 1960, width: 200 },
+            { x: 200, y: 1640, width: 200 },
+            {
+              x: 680,
+              y: 1480,
+              width: 120,
+              points: [{ x: 1040, y: 1480 }],
+            },
+            {
+              x: 1040,
+              y: 1360,
+              width: 120,
+              points: [{ x: 680, y: 1360 }],
+            },
+            { x: 960, y: 1200, width: 200 },
+            {
+              x: 1000,
+              y: 1120,
+              width: 120,
+              points: [{ x: 1000, y: 880 }],
+            },
+            {
+              x: 480,
+              y: 1020,
+              width: 120,
+              points: [{ x: 720, y: 1020 }],
+            },
+            {
+              x: 240,
+              y: 980,
+              width: 120,
+              points: [{ x: 240, y: 740 }],
+            },
+            { x: 200, y: 600, width: 200 },
+          ],
+          enemies: [
+            { x: 240, y: 1600 },
+            { x: 1200, y: 560 },
+            { x: 1200, y: 560, dir: -1 },
+            { x: 2120, y: 1920 },
+          ],
+          spikes: [
+            { x: 1120, y: 1920 },
+            { x: 880, y: 1920, num: 2 },
+            { x: 560, y: 1840 },
+            { x: 400, y: 1840 },
+            { x: 200, y: 1760 },
+            { x: 680, y: 1600, num: 12 },
+            { x: 400, y: 1160, num: 12 },
+            { x: 640, y: 560, num: 3 },
+            { x: 800, y: 560, num: 3 },
+            { x: 1720, y: 1160, num: 12 },
+            { x: 1640, y: 920, num: 2 },
+            { x: 1400, y: 1160, num: 6 },
+            { x: 1360, y: 1920, num: 3 },
+            { x: 1600, y: 1920, num: 3 },
+            { x: 1840, y: 1920, num: 3 },
+          ],
+          spikyBalls: [
+            { x: 640, y: 960 },
+            { x: 200, y: 480 },
+            { x: 240, y: 480 },
+            { x: 280, y: 480 },
+            { x: 320, y: 480 },
+            { x: 360, y: 480 },
+            { x: 1600, y: 480 },
+            { x: 1720, y: 560 },
+            { x: 1840, y: 480 },
+            { x: 1960, y: 560 },
+            { x: 1400, y: 1440 },
+            { x: 1640, y: 1560 },
+            { x: 1880, y: 1680 },
+            { x: 1880, y: 2240 },
+            { x: 1880, y: 2200 },
+            { x: 1880, y: 2160 },
+            { x: 1880, y: 2000 },
+            { x: 1680, y: 2240 },
+            { x: 1680, y: 2080 },
+            { x: 1680, y: 2040 },
+            { x: 1680, y: 2000 },
+            { x: 1480, y: 2240 },
+            { x: 1480, y: 2200 },
+            { x: 1480, y: 2040 },
+            { x: 1480, y: 2000 },
+          ],
+          fallingBlocks: [
+            { x: 2040, y: 600, num: 4 },
+            { x: 2080, y: 800, num: 2 },
+            { x: 1960, y: 1000, num: 6 },
+            { x: 1800, y: 1000, num: 2 },
+            { x: 1480, y: 1000, num: 2 },
+            { x: 1240, y: 1200, num: 4 },
+            { x: 2000, y: 1720, num: 5 },
+            { x: 2000, y: 1960, num: 5 },
+          ],
+          coins: [
+            { x: 880, y: 1840, numX: 2 },
+            { x: 460, y: 1840, numX: 2 },
+            { x: 1000, y: 660, numX: 3 },
+            { x: 240, y: 1080, numX: 3 },
+            { x: 600, y: 520 },
+            { x: 760, y: 480 },
+            { x: 920, y: 440 },
+            { x: 2080, y: 760, numX: 2 },
+            { x: 1800, y: 960, numX: 2 },
+            { x: 1480, y: 960, numX: 2 },
+            { x: 1500, y: 1560, numX: 2 },
+            { x: 1740, y: 1680, numX: 2 },
+          ],
+        },
       }
 
       const transitionEventsEmitter = new Phaser.Events.EventEmitter()
@@ -769,6 +908,13 @@
           Phaser.Utils.String.Pad(seconds, 2, '0', 1) +
           '"' +
           Phaser.Utils.String.Pad(centiseconds, 3, '0', 1)
+        )
+      }
+
+      function getLevelTotalCoins(levelNum) {
+        return (levelsData[`level${levelNum}`]?.coins || []).reduce(
+          (acc, { numX, numY }) => acc + Math.max(numX || 1, numY || 1),
+          0
         )
       }
 
@@ -1164,9 +1310,12 @@
           this.input.keyboard.on('keydown-ESC', this.togglePause, this)
 
           // Pièces
-          this.coinsCollected = 0
+          this.coinsCollected = (this.registry.get('coinsCollected') || []).reduce((acc, val) => acc + val, 0)
           this.add.circle(20, 20, 10, 0xffec27)
-          this.coinsText = this.add.text(36, 10, 'x00', { fontSize: '24px', fill: '#ffffff' })
+          this.coinsText = this.add.text(36, 10, `x${this.coinsCollected.toString().padStart(2, '0')}`, {
+            fontSize: '24px',
+            fill: '#ffffff',
+          })
           gameScene.events.on('collectCoin', this.updateCoins, this)
 
           const isSpeedrunMode = this.registry.get('mode') === 'speedrun'
@@ -1261,7 +1410,7 @@
           this.registry.set('isPaused', !isPaused)
         }
 
-        handleLevelEnd(currentLevel) {
+        handleLevelEnd({ currentLevel, startedFromCheckpoint }) {
           this.stopTimer.call(this)
 
           const levelInfo = getLevelInfo(currentLevel)
@@ -1269,11 +1418,13 @@
 
           const previousBestTime = levelInfo.time || Infinity
           const newTime = this.time.now - this.startTime
+          const levelTotalCoins = getLevelTotalCoins(currentLevel)
           const previousMaxCoins = levelInfo.coins || 0
 
           updateLevelInfo(currentLevel, {
-            ...(newTime < previousBestTime && { time: newTime }),
+            ...(this.registry.get('mode') === 'speedrun' && newTime < previousBestTime && { time: newTime }),
             ...(this.coinsCollected > previousMaxCoins && { coins: this.coinsCollected }),
+            ...(this.coinsCollected === levelTotalCoins && !startedFromCheckpoint && { shinyCoin: true }),
           })
 
           this.startTime = 0
@@ -1397,6 +1548,7 @@
         create() {
           this.scene.stop('hud')
           this.registry.set('isCheckpointActive', false)
+          this.registry.set('coinsCollected', false)
           const unlockedLevels = getUnlockedLevels()
 
           const btnBack = this.add.sprite(40, 40, 'btnBack')
@@ -1452,12 +1604,9 @@
 
             // Pièces max
             const coins = (levelInfo && levelInfo.coins) || 0
-            const levelTotalCoins = (levelsData[`level${level}`]?.coins || []).reduce(
-              (acc, cur) => acc + Math.max(cur.numX || 1, cur.numY || 1),
-              0
-            )
+            const levelTotalCoins = getLevelTotalCoins(level)
             if (coins > 0 && coins === levelTotalCoins) {
-              this.add.circle(x, y + 24, 4, 0xffec27)
+              this.add.circle(x, y + 24, 4, levelInfo.shinyCoin ? 0xffec27 : 0xffa300)
             }
           }
 
@@ -1578,6 +1727,9 @@
           this.timerStarted = false
           this.playerMode = PLAYER_MODE_PLATFORM
           this.isCheckpointActive = this.registry.get('isCheckpointActive')
+          this.startedFromCheckpoint = this.isCheckpointActive
+          const coinsCollected = this.registry.get('coinsCollected') || []
+          this.coinsCollected = [...coinsCollected]
           this.isSpeedrunMode = this.registry.get('mode') === 'speedrun'
           this.audioManager = this.scene.get('audio')
           this.time.delayedCall(
@@ -1674,7 +1826,7 @@
           const spikesPos = this.levelData.spikes ?? []
           for (let i = 0; i < spikesPos.length; i++) {
             const { x, y } = spikesPos[i]
-            this.addSpike(spikes, spikesPos[i])
+            this.addSpikes(spikes, spikesPos[i])
           }
 
           const spikyBalls = this.physics.add.group({
@@ -1709,11 +1861,7 @@
           }
 
           // Pièces
-          this.coins = this.physics.add.staticGroup()
-          const coinsPos = this.levelData.coins || []
-          for (let i = 0; i < coinsPos.length; i++) {
-            this.addCoin(this.coins, coinsPos[i])
-          }
+          this.addCoins()
 
           // Checkpoint
           if (this.levelData.checkpoint && !this.isSpeedrunMode) {
@@ -2172,7 +2320,10 @@
         teleport() {
           this.canMove = false
           this.player.body.enable = false
-          this.events.emit('levelEnd', this.currentLevel)
+          this.events.emit('levelEnd', {
+            currentLevel: this.currentLevel,
+            startedFromCheckpoint: this.startedFromCheckpoint,
+          })
           this.audioManager.playSfx('sfxWin')
 
           if (this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
@@ -2291,22 +2442,37 @@
           group.add(cannon)
         }
 
-        addCoin(group, data) {
-          const { x, y, numX = 1, numY = 1 } = data
-          for (let i = 0; i < Math.max(numX, numY); i++) {
-            const isHorizontal = numX >= numY
-            const coin = this.add
-              .circle(
-                x + (isHorizontal ? TILE_SIZE * i : 0) + (TILE_SIZE - COIN_SIZE) / 2,
-                y + (isHorizontal ? 0 : TILE_SIZE * i) + (TILE_SIZE - COIN_SIZE) / 2,
-                COIN_SIZE / 2,
-                0xffec27
-              )
-              .setOrigin(0)
-            this.physics.add.existing(coin, true)
-            coin.body.setCircle(10)
-            coin.body.setOffset(5, 5)
-            group.add(coin)
+        addCoins() {
+          this.coins = this.physics.add.staticGroup()
+          const coinsPos = this.levelData.coins || []
+
+          if (this.coinsCollected.length === 0) {
+            const totalCoins = getLevelTotalCoins(this.currentLevel)
+            this.coinsCollected = Array(totalCoins).fill(0)
+          }
+
+          let coinIndex = 0
+          for (let i = 0; i < coinsPos.length; i++) {
+            const { x, y, numX = 1, numY = 1 } = coinsPos[i]
+            for (let j = 0; j < Math.max(numX, numY); j++) {
+              coinIndex++
+              if (this.coinsCollected[coinIndex - 1] === 1) continue
+
+              const isHorizontal = numX >= numY
+              const coin = this.add
+                .circle(
+                  x + (isHorizontal ? TILE_SIZE * j : 0) + (TILE_SIZE - COIN_SIZE) / 2,
+                  y + (isHorizontal ? 0 : TILE_SIZE * j) + (TILE_SIZE - COIN_SIZE) / 2,
+                  COIN_SIZE / 2,
+                  0xffec27
+                )
+                .setOrigin(0)
+              this.physics.add.existing(coin, true)
+              coin.body.setCircle(10)
+              coin.body.setOffset(5, 5)
+              this.coins.add(coin)
+              coin.setData('collectedIndex', coinIndex - 1)
+            }
           }
         }
 
@@ -2340,11 +2506,16 @@
           player.setData('stickedPlatform', platform)
         }
 
-        addSpike(group, data) {
+        addSpikes(group, data) {
           const { x, y, dir = 0, num = 1 } = data
 
           for (let i = 0; i < num; i++) {
-            const spike = this.add.sprite(x + TILE_SIZE / 2 + TILE_SIZE * i, y + TILE_SIZE / 2, 'spike')
+            const isVertical = dir === 1 || dir === 3
+            const spike = this.add.sprite(
+              x + TILE_SIZE / 2 + (!isVertical ? TILE_SIZE * i : 0),
+              y + TILE_SIZE / 2 + (isVertical ? TILE_SIZE * i : 0),
+              'spike'
+            )
             spike.angle = dir * 90
             this.physics.add.existing(spike, true)
             spike.body.setCircle(spike.displayWidth / 3)
@@ -2357,7 +2528,7 @@
         }
 
         addSpikyBall(group, data) {
-          const { x, y, points } = data
+          const { x, y, points, startAt = 0 } = data
           let spikyBall
 
           // Création d'un path follower si des points sont définis
@@ -2375,6 +2546,8 @@
             spikyBall.startFollow({
               duration,
               repeat: -1,
+              positionOnPath: true,
+              startAt,
             })
           } else {
             spikyBall = this.add.sprite(x, y, 'spikyBall')
@@ -2508,6 +2681,8 @@
           this.events.emit('collectCoin')
           this.audioManager.playSfx('sfxCoin')
           addDesignEvent(ANALYTICS_COIN_COLLECTED)
+          this.coinsCollected[coin.getData('collectedIndex')] = 1
+
           coin.destroy()
         }
 
@@ -2562,6 +2737,7 @@
           this.isCheckpointActive = true
           this.checkpointTrigger.active = false
           this.registry.set('isCheckpointActive', true)
+          this.registry.set('coinsCollected', [...this.coinsCollected])
 
           this.audioManager.playSfx('sfxCheckpoint')
           this.tweens.add({
