@@ -6,6 +6,9 @@ enum AudioKey {
   SfxWin = 'sfxWin',
   SfxCoin = 'sfxCoin',
   SfxCheckpoint = 'sfxCheckpoint',
+  SfxUnlock = 'sfxUnlock',
+  SfxButton = 'sfxButton',
+  SfxShake = 'sfxShake',
 }
 
 export default AudioKey

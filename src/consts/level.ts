@@ -15,6 +15,8 @@ export interface DataLevels {
 }
 
 export interface DataLevel {
+  isBoss?: boolean
+  bossTrigger?: BossTrigger
   world: LevelSize
   player: LevelPosition
   target: LevelPosition
@@ -31,6 +33,7 @@ export interface DataLevel {
   spikyBalls?: LevelSpikyBall[]
   spikes?: LevelSpike[]
   cannons?: LevelCannon[]
+  eventBlocks?: LevelEventBlock[]
 }
 
 export interface LevelPosition {
@@ -52,6 +55,8 @@ export interface LevelClouds {
 }
 
 export interface LevelPlatform extends LevelPosition, LevelSize {}
+export interface BossTrigger extends LevelPosition, LevelSize {}
+export interface LevelEventBlock extends LevelPosition, Partial<LevelSize> {}
 
 export interface LevelOneWayPlatform extends LevelPosition, Pick<LevelSize, 'width'> {
   points?: LevelPosition[]

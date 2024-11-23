@@ -1,5 +1,8 @@
+import AudioKey from '../../consts/audio-key'
 import { TILE_SIZE } from '../../consts/globals'
+import SceneKey from '../../consts/scene-key'
 import TextureKey from '../../consts/texture-key'
+import AudioScene from '../../scenes/audio-scene'
 
 export default class IconButton extends Phaser.GameObjects.Container {
   private up: Phaser.GameObjects.Image
@@ -26,6 +29,7 @@ export default class IconButton extends Phaser.GameObjects.Container {
       (...args: any[]) => {
         this.onHover()
         onPointerDown.call(scene, ...args)
+        ;(this.scene.scene.get(SceneKey.Audio) as AudioScene).playSfx(AudioKey.SfxButton)
       },
       this
     )

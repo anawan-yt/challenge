@@ -89,6 +89,9 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.audio(AudioKey.SfxWin, 'audio/sfx-win.mp3')
     this.load.audio(AudioKey.SfxCoin, 'audio/sfx-coin.mp3')
     this.load.audio(AudioKey.SfxCheckpoint, 'audio/sfx-checkpoint.mp3')
+    this.load.audio(AudioKey.SfxUnlock, 'audio/sfx-unlock.mp3')
+    this.load.audio(AudioKey.SfxButton, 'audio/sfx-button.mp3')
+    this.load.audio(AudioKey.SfxShake, 'audio/sfx-shake.mp3')
 
     const { width, height } = this.scale
     this.add

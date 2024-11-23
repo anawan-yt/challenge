@@ -1,9 +1,18 @@
 import AnalyticsKey from '../consts/analytics-key'
-import { COIN_SIZE, ENEMY2_JUMP_DELAY, ENEMY_VELOCITY, NUM_LEVELS, PlayerMode, TILE_SIZE } from '../consts/globals'
+import {
+  BOSS_BOUNCE_VELOCITY,
+  COIN_SIZE,
+  ENEMY2_JUMP_DELAY,
+  ENEMY_VELOCITY,
+  NUM_LEVELS,
+  PlayerMode,
+  TILE_SIZE,
+} from '../consts/globals'
 import {
   DataLevel,
   GameMode,
   LevelEnemy,
+  LevelEventBlock,
   LevelFallingBlock,
   LevelOneWayPlatform,
   LevelSpike,
@@ -15,6 +24,7 @@ import { levelsData } from '../levels'
 import { addDesignEvent, addProgressionEvent, ProgressionEventType } from '../utils/analytics'
 import { getLevelTotalCoins, unlockLevel } from '../utils/level'
 import { transitionEventsEmitter } from '../utils/transition'
+import { isTouchingFromAbove } from '../utils/helpers'
 import AudioScene from './audio-scene'
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
@@ -30,6 +40,8 @@ import FallingBlock from '../objects/falling-block'
 import Transformer from '../objects/transformer'
 import Target from '../objects/target'
 import Coin from '../objects/coin'
+import Boss from '../objects/boss'
+import EventBlock from '../objects/event-block'
 
 interface Keys {
   [key: string]: { isDown: boolean }
@@ -62,6 +74,7 @@ export default class GameScene extends Phaser.Scene {
   private fireballs!: Phaser.Physics.Arcade.Group
   private target!: Target
   private fallingBlocks!: Phaser.Physics.Arcade.StaticGroup
+  private eventBlocks!: Phaser.Physics.Arcade.StaticGroup
   private fallingBlocksTriggers!: Phaser.Physics.Arcade.StaticGroup
   private transformers!: Phaser.Physics.Arcade.StaticGroup
   private enemies!: Phaser.Physics.Arcade.Group
@@ -72,10 +85,13 @@ export default class GameScene extends Phaser.Scene {
   private coinsEmitter!: Phaser.GameObjects.Particles.ParticleEmitter
 
   private enemiesCollider!: Phaser.Physics.Arcade.Collider
+  private bossCollider!: Phaser.Physics.Arcade.Collider
+  private bossTrigger!: Phaser.GameObjects.Rectangle
   private platformsCollider!: Phaser.Physics.Arcade.Collider
   private cannonsCollider!: Phaser.Physics.Arcade.Collider
   private oneWayPlatformsCollider!: Phaser.Physics.Arcade.Collider
   private fallingBlocksCollider!: Phaser.Physics.Arcade.Collider
+  private eventBlocksCollider!: Phaser.Physics.Arcade.Collider
   private fallingBlocksTriggersOverlap!: Phaser.Physics.Arcade.Collider
   private transformersTriggers!: Phaser.Physics.Arcade.Collider
   private checkpointTrigger!: Phaser.Physics.Arcade.Collider
@@ -84,6 +100,7 @@ export default class GameScene extends Phaser.Scene {
   private zKey!: Phaser.Input.Keyboard.Key
   private upKey!: Phaser.Input.Keyboard.Key
   private spaceKey!: Phaser.Input.Keyboard.Key
+  private boss: Boss | null = null
 
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private keys!: Keys
@@ -105,6 +122,10 @@ export default class GameScene extends Phaser.Scene {
 
   get playerMode() {
     return this._playerMode
+  }
+
+  get playerRef() {
+    return this.player
   }
 
   init(data: { level: number }) {
@@ -168,6 +189,14 @@ export default class GameScene extends Phaser.Scene {
       )
       cloud.setVelocityX(Phaser.Math.Between(10, 20))
       cloud.setAlpha(Phaser.Math.FloatBetween(0.2, 0.8))
+    }
+
+    // Boss
+    if (this.levelData.isBoss) {
+      this.boss = new Boss(this)
+      const { x, y, width, height } = this.levelData.bossTrigger!
+      this.bossTrigger = this.add.rectangle(x, y, width, height).setOrigin(0)
+      this.physics.add.existing(this.bossTrigger, true)
     }
 
     // Plateformes
@@ -235,6 +264,13 @@ export default class GameScene extends Phaser.Scene {
     const fallingBlocksPos = this.levelData.fallingBlocks ?? []
     for (let i = 0; i < fallingBlocksPos.length; i++) {
       this.addFallingBlock(this.fallingBlocks, this.fallingBlocksTriggers, fallingBlocksPos[i])
+    }
+
+    // Event Blocks
+    this.eventBlocks = this.physics.add.staticGroup()
+    const eventBlocksPos = this.levelData.eventBlocks ?? []
+    for (let i = 0; i < eventBlocksPos.length; i++) {
+      this.addEventBlock(this.eventBlocks, eventBlocksPos[i])
     }
 
     // Transformers
@@ -323,6 +359,7 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.enemies, this.oneWayPlatforms)
     this.physics.add.collider(this.enemies, this.fallingBlocks)
     this.fallingBlocksCollider = this.physics.add.collider(this.player, this.fallingBlocks)
+    this.eventBlocksCollider = this.physics.add.collider(this.player, this.eventBlocks)
     this.fallingBlocksTriggersOverlap = this.physics.add.overlap(
       this.player,
       this.fallingBlocksTriggers,
@@ -337,6 +374,14 @@ export default class GameScene extends Phaser.Scene {
       undefined,
       this
     )
+
+    if (this.boss) {
+      this.physics.add.collider(this.boss, this.platforms)
+      this.bossCollider = this.physics.add.overlap(this.boss, this.player, this.handleBossCollision, undefined, this)
+      this.physics.add.overlap(this.player, this.bossTrigger!, this.handleBossTrigger, undefined, this)
+      this.events.on(EventKey.UnlockEventBlocks, this.unlockEventBlocks, this)
+      this.events.on(EventKey.UnfreezePlayer, this.unfreezePlayer, this)
+    }
 
     // Détection checkpoint
     if (this.levelData.checkpoint && !this.isCheckpointActive) {
@@ -382,6 +427,8 @@ export default class GameScene extends Phaser.Scene {
     this.events.on('postupdate', this.checkWorldBounds, this)
     this.events.once('shutdown', () => {
       this.events.off('postupdate', this.checkWorldBounds)
+      this.events.off(EventKey.UnlockEventBlocks, this.unlockEventBlocks, this)
+      this.events.off(EventKey.UnfreezePlayer, this.unfreezePlayer, this)
     })
 
     // HUD
@@ -416,15 +463,17 @@ export default class GameScene extends Phaser.Scene {
             body.setVelocityX(0)
           }
         } else {
-          if (body.touching.right) {
+          if (body.blocked.right) {
             dir = -1
-          } else if (body.touching.left) {
+          } else if (body.blocked.left) {
             dir = 1
           }
           enemy.setData('dir', dir)
           body.setVelocityX(ENEMY_VELOCITY * dir)
         }
       })
+
+    this.boss?.update()
 
     // Reset des nuages
     this.clouds.getChildren().forEach((object) => {
@@ -487,6 +536,30 @@ export default class GameScene extends Phaser.Scene {
     }
 
     this.handlePointerMove(pointer)
+  }
+
+  unlockEventBlocks() {
+    this.eventBlocks.clear(true, true)
+    this.audioManager.playSfx(AudioKey.SfxUnlock)
+  }
+
+  handleBossTrigger() {
+    this.freezePlayer()
+    this.bossTrigger.destroy()
+    this.time.delayedCall(2000, () => {
+      this.boss?.fall()
+    })
+  }
+
+  freezePlayer() {
+    this.events.emit(EventKey.ToggleCinematicFrames)
+    ;(this.player.body as Phaser.Physics.Arcade.Body).velocity.x = 0
+    this._canMove = false
+  }
+
+  unfreezePlayer() {
+    this.events.emit(EventKey.ToggleCinematicFrames)
+    this._canMove = true
   }
 
   handlePointerMove(pointer: Phaser.Input.Pointer) {
@@ -559,12 +632,16 @@ export default class GameScene extends Phaser.Scene {
     this.oneWayPlatformsCollider.active = false
     this.enemiesCollider.active = false
     this.fallingBlocksCollider.active = false
+    this.eventBlocksCollider.active = false
     this.fallingBlocksTriggersOverlap.active = false
     this.targetTrigger.active = false
     this.transformersTriggers.active = false
     this.coinsTriggers.active = false
     if (this.checkpointTrigger) {
       this.checkpointTrigger.active = false
+    }
+    if (this.boss) {
+      this.bossCollider.active = false
     }
     this.cameras.main.stopFollow()
     this.audioManager.playSfx(AudioKey.SfxDeath)
@@ -705,6 +782,13 @@ export default class GameScene extends Phaser.Scene {
     group.add(enemy)
   }
 
+  addEventBlock(group: Phaser.Physics.Arcade.StaticGroup, data: LevelEventBlock) {
+    const { x, y, width = TILE_SIZE, height = TILE_SIZE } = data
+    const eventBlock = new EventBlock(this, x, y, width, height)
+    eventBlock.setOrigin(0)
+    group.add(eventBlock)
+  }
+
   addFallingBlock(
     group: Phaser.Physics.Arcade.StaticGroup,
     triggerGroup: Phaser.Physics.Arcade.StaticGroup,
@@ -744,16 +828,41 @@ export default class GameScene extends Phaser.Scene {
     coin.destroy()
   }
 
+  handleBossCollision() {
+    const hasCollidedFromAbove = isTouchingFromAbove(this.player, this.boss!)
+    if (hasCollidedFromAbove && this.boss!.isHittable) {
+      // Boss hit
+      this.boss!.hit()
+      this.player.jumpOffEnemy(BOSS_BOUNCE_VELOCITY)
+
+      if (!this.boss!.isDead) {
+        this.toggleOneWayPlatforms()
+        this.time.delayedCall(5000, this.toggleOneWayPlatforms, undefined, this)
+      }
+    } else {
+      this.die.call(this)
+    }
+  }
+
+  toggleOneWayPlatforms() {
+    if (this.player.isDead) return
+    const isActive = !this.oneWayPlatformsCollider.active
+    this.oneWayPlatformsCollider.active = isActive
+    this.oneWayPlatforms.getChildren().forEach((platform) => {
+      this.tweens.add({
+        targets: platform,
+        alpha: isActive ? 1 : 0.5,
+        duration: 500,
+      })
+    })
+  }
+
   handleEnemiesCollision: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback = (_: any, object: any) => {
     const enemy = object as Phaser.GameObjects.Sprite
     if (this.player.isDead || enemy.getData('isDead')) return
 
-    const dx = this.player.x - enemy.x - TILE_SIZE / 2
-    const dy = this.player.y - enemy.y - TILE_SIZE / 2
-
-    const angle = Math.atan2(dy, dx)
-    const angleDeg = Phaser.Math.RadToDeg(angle)
-    if (angleDeg <= -45 && angleDeg >= -135 && enemy.getData('type') === 1) {
+    const hasCollidedFromAbove = isTouchingFromAbove(this.player, enemy)
+    if (hasCollidedFromAbove && enemy.getData('type') === 1) {
       enemy.setData('isDead', true)
       ;(enemy.body as Phaser.Physics.Arcade.Body).setVelocityX(0)
 

@@ -31,6 +31,9 @@ export default class AudioScene extends Phaser.Scene {
       const sfxWin = this.sound.add(AudioKey.SfxWin)
       const sfxCheckpoint = this.sound.add(AudioKey.SfxCheckpoint)
       const sfxCoin = this.sound.add(AudioKey.SfxCoin)
+      const sfxUnlock = this.sound.add(AudioKey.SfxUnlock)
+      const sfxButton = this.sound.add(AudioKey.SfxButton)
+      const sfxShake = this.sound.add(AudioKey.SfxShake)
 
       this.sfx = {
         sfxJump,
@@ -39,6 +42,9 @@ export default class AudioScene extends Phaser.Scene {
         sfxWin,
         sfxCoin,
         sfxCheckpoint,
+        sfxUnlock,
+        sfxButton,
+        sfxShake,
       }
     }
   }

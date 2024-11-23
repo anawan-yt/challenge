@@ -5,6 +5,9 @@ enum EventKey {
   StartTimer = 'startTimer',
   StopTimer = 'stopTimer',
   LevelEnd = 'levelEnd',
+  UnlockEventBlocks = 'unlockEventBlocks',
+  UnfreezePlayer = 'unfreezePlayer',
+  ToggleCinematicFrames = 'toggleCinematicFrames',
 }
 
 export default EventKey

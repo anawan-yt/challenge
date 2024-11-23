@@ -1,5 +1,6 @@
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
+import { CINEMATIC_FRAME_HEIGHT } from '../consts/globals'
 import { GameMode } from '../consts/level'
 import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
@@ -11,9 +12,13 @@ import { transitionEventsEmitter } from '../utils/transition'
 import GameScene from './game-scene'
 
 export default class HUDScene extends Phaser.Scene {
+  private cinematicFrameTop!: Phaser.GameObjects.Rectangle
+  private cinematicFrameBottom!: Phaser.GameObjects.Rectangle
+  private showCinematicFrames: boolean
   private coinsText!: Phaser.GameObjects.Text
   private timerText!: Phaser.GameObjects.Text
   private panelPause!: Phaser.GameObjects.Container
+  private HUDItems!: Phaser.GameObjects.Container
   private coinsCollected!: number
   private timerStarted = false
   private startTime = 0
@@ -21,17 +26,27 @@ export default class HUDScene extends Phaser.Scene {
 
   constructor() {
     super({ key: SceneKey.HUD })
+    this.showCinematicFrames = false
   }
 
   create() {
+    const { width, height } = this.scale
+
+    this.cinematicFrameTop = this.add.rectangle(0, -CINEMATIC_FRAME_HEIGHT, width, CINEMATIC_FRAME_HEIGHT, 0x000000)
+    this.cinematicFrameTop.setOrigin(0, 0)
+    this.cinematicFrameBottom = this.add.rectangle(0, height, width, CINEMATIC_FRAME_HEIGHT, 0x000000)
+    this.cinematicFrameBottom.setOrigin(0, 0)
+
+    const mobileCursorsContainer = this.add.container()
     if (!this.sys.game.device.os.desktop) {
-      this.add.image(180, 940, TextureKey.BtnCursor).setAngle(180).setAlpha(0.5)
-      this.add.image(420, 940, TextureKey.BtnCursor).setAlpha(0.5)
+      const cursorLeft = this.add.image(180, 940, TextureKey.BtnCursor).setAngle(180).setAlpha(0.5)
+      const cursorRight = this.add.image(420, 940, TextureKey.BtnCursor).setAlpha(0.5)
+      mobileCursorsContainer.add([cursorLeft, cursorRight])
     }
 
     const gameScene = this.scene.get(SceneKey.Game) as GameScene
 
-    new IconButton(this, 1840, 80, IconsKey.Pause, this.togglePause)
+    const btnPause = new IconButton(this, 1840, 80, IconsKey.Pause, this.togglePause)
     this.input.keyboard!.on('keydown-P', this.togglePause, this)
     this.input.keyboard!.on('keydown-ESC', this.togglePause, this)
 
@@ -40,7 +55,7 @@ export default class HUDScene extends Phaser.Scene {
       (acc: number, val: number) => acc + val,
       0
     )
-    this.add.circle(60, 60, 20, 0xffec27)
+    const coin = this.add.circle(60, 60, 20, 0xffec27)
     this.coinsText = this.add.text(92, 34, `x${this.coinsCollected.toString().padStart(2, '0')}`, {
       fontFamily: TextureKey.FontHeading,
       fontSize: '48px',
@@ -63,9 +78,9 @@ export default class HUDScene extends Phaser.Scene {
     gameScene.events.on(EventKey.StartTimer, this.startTimer, this)
     gameScene.events.on(EventKey.StopTimer, this.stopTimer, this)
     gameScene.events.on(EventKey.LevelEnd, this.handleLevelEnd, this)
+    gameScene.events.on(EventKey.ToggleCinematicFrames, this.toggleCinematicFrames, this)
 
     // Panel
-    const { width, height } = this.scale
     const [panelWidth, panelHeight] = [640, 360]
     const [centerX, centerY] = [(width - panelWidth) / 2, (height - panelHeight) / 2]
 
@@ -95,8 +110,28 @@ export default class HUDScene extends Phaser.Scene {
     const btnLevels = new IconButton(this, width / 2 - 120, height / 2 + 40, IconsKey.Levels, this.goToLevels)
 
     this.panelPause.add([panelOverlay, panelPauseBg, panelTxt, btnPlay, btnRestart, btnLevels])
+    this.HUDItems = this.add.container(0, 0, [btnPause, coin, timerContainer, this.coinsText, mobileCursorsContainer])
 
     this.events.once('shutdown', this.handleShutdown, this)
+  }
+
+  toggleCinematicFrames() {
+    this.showCinematicFrames = !this.showCinematicFrames
+    this.HUDItems.setVisible(!this.showCinematicFrames)
+
+    this.tweens.add({
+      targets: this.cinematicFrameTop,
+      y: this.showCinematicFrames ? 0 : -CINEMATIC_FRAME_HEIGHT,
+      duration: 500,
+      ease: 'Cubic.Out',
+    })
+
+    this.tweens.add({
+      targets: this.cinematicFrameBottom,
+      y: this.showCinematicFrames ? this.scale.height - CINEMATIC_FRAME_HEIGHT : this.scale.height,
+      duration: 500,
+      ease: 'Cubic.Out',
+    })
   }
 
   handleShutdown() {
@@ -105,6 +140,7 @@ export default class HUDScene extends Phaser.Scene {
     gameScene.events.off(EventKey.StopTimer, this.stopTimer, this)
     gameScene.events.off(EventKey.LevelEnd, this.handleLevelEnd, this)
     gameScene.events.off(EventKey.CollectCoin, this.updateCoins, this)
+    gameScene.events.off(EventKey.ToggleCinematicFrames, this.toggleCinematicFrames, this)
   }
 
   goToLevels() {
@@ -134,6 +170,7 @@ export default class HUDScene extends Phaser.Scene {
   }
 
   togglePause() {
+    if (this.showCinematicFrames) return
     const isPaused = this.registry.get(DataKey.IsPaused)
     if (isPaused) {
       this.scene.resume(SceneKey.Game)

@@ -13,7 +13,7 @@ import {
   PLAYER_MIN_JUMP_VELOCITY,
   PLAYER_VELOCITY,
   PlayerMode,
-  TILE_SIZE,
+  PLAYER_SIZE,
 } from '../consts/globals'
 import TextureKey from '../consts/texture-key'
 import GameScene from '../scenes/game-scene'
@@ -53,10 +53,10 @@ export default class Player extends Phaser.GameObjects.Container {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y)
-    this._sprite = scene.add.rectangle(0, 0, TILE_SIZE, TILE_SIZE, 0xfff1e8)
+    this._sprite = scene.add.rectangle(0, 0, PLAYER_SIZE, PLAYER_SIZE, 0xfff1e8)
     this.stickedPlatform = null
     this.add(this._sprite)
-    this.setSize(TILE_SIZE, TILE_SIZE)
+    this.setSize(PLAYER_SIZE, PLAYER_SIZE)
     scene.physics.world.enable(this)
     scene.add.existing(this)
 
@@ -104,7 +104,7 @@ export default class Player extends Phaser.GameObjects.Container {
             targets: this._sprite,
             scaleY: 0.6,
             scaleX: 1.4,
-            y: 8,
+            y: 16,
             duration: 150,
             yoyo: true,
             ease: 'Cubic.easeOut',
@@ -237,8 +237,8 @@ export default class Player extends Phaser.GameObjects.Container {
     this.jumpCount = 1
   }
 
-  jumpOffEnemy() {
-    ;(this.body as Phaser.Physics.Arcade.Body).setVelocityY(-PLAYER_BOUNCE_OFF_VELOCITY)
+  jumpOffEnemy(velocityY: number = PLAYER_BOUNCE_OFF_VELOCITY) {
+    ;(this.body as Phaser.Physics.Arcade.Body).setVelocityY(-velocityY)
     this.jumpCount = 1
     this.isJumping = true
     this.jumpStartTime = this.scene.time.now

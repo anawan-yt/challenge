@@ -1,3 +1,4 @@
+import AudioKey from '../consts/audio-key'
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
 import { NUM_LEVELS } from '../consts/globals'
@@ -8,6 +9,7 @@ import IconButton from '../objects/ui/icon-button'
 import { getLevelInfo, getLevelTotalCoins } from '../utils/level'
 import { stringifyTime } from '../utils/time'
 import { transitionEventsEmitter } from '../utils/transition'
+import AudioScene from './audio-scene'
 
 export default class LevelsScene extends Phaser.Scene {
   constructor() {
@@ -49,7 +51,10 @@ export default class LevelsScene extends Phaser.Scene {
 
       if (levelInfo) {
         button.setInteractive()
-        button.on('pointerdown', () => this.goToScreen(SceneKey.Game, { level }))
+        button.on('pointerdown', () => {
+          ;(this.scene.get(SceneKey.Audio) as AudioScene).playSfx(AudioKey.SfxButton)
+          this.goToScreen(SceneKey.Game, { level })
+        })
       } else {
         button.alpha = 0.5
       }

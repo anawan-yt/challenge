@@ -1,3 +1,4 @@
+export const PLAYER_SIZE = 80
 export const PLAYER_VELOCITY = 480
 export const PLAYER_BOUNCE_OFF_VELOCITY = 800
 export const PLAYER_MIN_JUMP_VELOCITY = -720
@@ -18,6 +19,8 @@ export const TILE_SIZE = 80
 export const COIN_SIZE = 60
 export const CANNON_FIRE_RATE = 1400
 export const FIREBALL_VELOCITY = 720
+export const BOSS_BOUNCE_VELOCITY = 1200
+export const CINEMATIC_FRAME_HEIGHT = 120
 
 export enum PlayerMode {
   Platformer = 'platformer',
