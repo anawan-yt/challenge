@@ -28,4 +28,5 @@ export enum IconsKey {
   Play,
   Restart,
   Levels,
+  Edit,
 }

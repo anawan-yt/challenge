@@ -1,11 +1,9 @@
-import { PlayerDataLevel } from '../consts/level'
+import { DataLevel, PlayerDataLevel } from '../consts/level'
 import { levelsData } from '../levels'
 
-export function getLevelTotalCoins(levelNum: number) {
-  return (levelsData[`level${levelNum}`]?.coins || []).reduce(
-    (acc, { numX, numY }) => acc + Math.max(numX || 1, numY || 1),
-    0
-  )
+export function getLevelTotalCoins(level: number | DataLevel) {
+  const data = typeof level === 'number' ? levelsData[`level${level}`] : level
+  return (data?.coins || []).reduce((acc, { numX, numY }) => acc + Math.max(numX || 1, numY || 1), 0)
 }
 
 export function getUnlockedLevels(): PlayerDataLevel[] {

@@ -55,6 +55,7 @@ export interface LevelClouds {
 }
 
 export interface LevelPlatform extends LevelPosition, LevelSize {}
+export interface LevelItem extends LevelPosition, LevelSize {}
 export interface BossTrigger extends LevelPosition, LevelSize {}
 export interface LevelEventBlock extends LevelPosition, Partial<LevelSize> {}
 

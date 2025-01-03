@@ -48,8 +48,9 @@ interface Keys {
 }
 
 export default class GameScene extends Phaser.Scene {
-  private currentLevel!: number
+  private currentLevel: number | null = null
   private levelData!: DataLevel
+  private isCustomLevel = false
   private _canMove = false
   private isReady = false
   private touchLeft = false
@@ -128,9 +129,16 @@ export default class GameScene extends Phaser.Scene {
     return this.player
   }
 
-  init(data: { level: number }) {
-    this.currentLevel = data.level
-    this.levelData = levelsData[`level${this.currentLevel}`]
+  init(data: { number?: number; level?: DataLevel }) {
+    if (data.number) {
+      this.currentLevel = data.number
+      this.isCustomLevel = false
+      this.levelData = levelsData[`level${this.currentLevel}`]
+    } else if (data.level) {
+      this.levelData = data.level
+      this.isCustomLevel = true
+    }
+    this.registry.set(DataKey.IsCustomLevel, this.isCustomLevel)
   }
 
   create() {
@@ -525,7 +533,7 @@ export default class GameScene extends Phaser.Scene {
     this.events.emit(EventKey.StartTimer)
 
     // Analytics
-    addProgressionEvent(ProgressionEventType.Fail, 1, this.currentLevel)
+    this.trackProgression(ProgressionEventType.Start)
   }
 
   handlePointerDown(pointer: Phaser.Input.Pointer) {
@@ -611,16 +619,20 @@ export default class GameScene extends Phaser.Scene {
     })
     this.audioManager.playSfx(AudioKey.SfxWin)
 
-    if (this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
+    if (this.currentLevel && this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
       unlockLevel(this.currentLevel + 1)
     }
 
     // Analytics
-    addProgressionEvent(ProgressionEventType.Complete, 1, this.currentLevel)
+    this.trackProgression(ProgressionEventType.Complete)
 
     this.player.teleportTo(this.target, () => {
-      transitionEventsEmitter.emit(EventKey.TransitionStart)
-      transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(SceneKey.Levels), this)
+      if (this.isCustomLevel) {
+        this.restartGame()
+      } else {
+        transitionEventsEmitter.emit(EventKey.TransitionStart)
+        transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(SceneKey.Levels), this)
+      }
     })
   }
 
@@ -649,8 +661,8 @@ export default class GameScene extends Phaser.Scene {
     this.player.die()
 
     // Analytics
-    addProgressionEvent(ProgressionEventType.Fail, 1, this.currentLevel)
-    addDesignEvent(AnalyticsKey.PlayerDeath)
+    this.trackProgression(ProgressionEventType.Fail)
+    this.trackDesign(AnalyticsKey.PlayerDeath)
 
     this.time.delayedCall(1000, this.lose, [], this)
   }
@@ -677,7 +689,7 @@ export default class GameScene extends Phaser.Scene {
     const coinsPos = this.levelData.coins || []
 
     if (this.coinsCollected.length === 0) {
-      const totalCoins = getLevelTotalCoins(this.currentLevel)
+      const totalCoins = getLevelTotalCoins(this.currentLevel ?? this.levelData)
       this.coinsCollected = Array(totalCoins).fill(0)
     }
 
@@ -822,8 +834,9 @@ export default class GameScene extends Phaser.Scene {
     this.coinsEmitter.explode(8)
     this.events.emit(EventKey.CollectCoin)
     this.audioManager.playSfx(AudioKey.SfxCoin)
-    addDesignEvent(AnalyticsKey.CoinCollected)
     this.coinsCollected[coin.collectedIndex] = 1
+
+    this.trackDesign(AnalyticsKey.CoinCollected)
 
     coin.destroy()
   }
@@ -879,12 +892,26 @@ export default class GameScene extends Phaser.Scene {
       this.player.jumpOffEnemy()
 
       // Analytics
-      addDesignEvent(AnalyticsKey.EnemyKilled)
+      this.trackDesign(AnalyticsKey.EnemyKilled)
 
       return
     }
 
     this.die.call(this)
+  }
+
+  trackProgression(type: ProgressionEventType) {
+    if (this.isCustomLevel || !this.currentLevel) {
+      return
+    }
+    addProgressionEvent(type, 1, this.currentLevel)
+  }
+
+  trackDesign(name: AnalyticsKey) {
+    if (this.isCustomLevel) {
+      return
+    }
+    addDesignEvent(name)
   }
 
   handleCheckpoint() {

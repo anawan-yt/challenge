@@ -8,6 +8,8 @@ enum EventKey {
   UnlockEventBlocks = 'unlockEventBlocks',
   UnfreezePlayer = 'unfreezePlayer',
   ToggleCinematicFrames = 'toggleCinematicFrames',
+  EditorPlaytest = 'editorPlaytest',
+  EditorToggle = 'editorToggle',
 }
 
 export default EventKey

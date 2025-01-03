@@ -1,10 +1,5 @@
-import Phaser from 'phaser'
-import ga from 'gameanalytics'
-import { GameConfig } from './config'
+import { createApp } from 'vue'
 import './style.css'
+import App from './App.vue'
 
-ga.GameAnalytics.setEnabledInfoLog(true)
-ga.GameAnalytics.configureBuild('0.0.14')
-// ga.GameAnalytics.initialize('xxx', 'xxx')
-
-export default new Phaser.Game(GameConfig)
+createApp(App).mount('#app')
