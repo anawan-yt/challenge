@@ -1,12 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 body {
+  margin: 0;
   background-color: #29adff;
 }
 
-#app {
-  height: 100vh;
+#game {
+  height: 100svh;
   width: 100%;
 }

@@ -42,15 +42,26 @@ import Target from '../objects/target'
 import Coin from '../objects/coin'
 import Boss from '../objects/boss'
 import EventBlock from '../objects/event-block'
+import { EditorItem, EditorPlaceItemProps, EditorPlaceItemsProps, EditorRemoveItemProps } from '../consts/editor'
+import {
+  convertFallingBlocksToCells,
+  convertPlatformsToCells,
+  convertPointerToPos,
+  convertSpikesToCells,
+  getPlatformsFromGrid,
+  getSpikesFromGrid,
+  getFallingBlocksFromGrid,
+} from '../utils/editor'
 
 interface Keys {
   [key: string]: { isDown: boolean }
 }
 
+type GameItem = Platform | Spike | FallingBlock
+
 export default class GameScene extends Phaser.Scene {
   private currentLevel: number | null = null
   private levelData!: DataLevel
-  private isCustomLevel = false
   private _canMove = false
   private isReady = false
   private touchLeft = false
@@ -68,7 +79,9 @@ export default class GameScene extends Phaser.Scene {
   private hills!: Phaser.GameObjects.Group
   private hills2!: Phaser.GameObjects.Group
   private clouds!: Phaser.Physics.Arcade.Group
-  private platforms!: Phaser.Physics.Arcade.StaticGroup
+  private platforms!: Phaser.GameObjects.Group
+  private platformsHitbox!: Phaser.Physics.Arcade.StaticGroup
+  private spikes!: Phaser.Physics.Arcade.StaticGroup
   private coins!: Phaser.Physics.Arcade.StaticGroup
   private oneWayPlatforms!: Phaser.Physics.Arcade.Group
   private cannons!: Phaser.Physics.Arcade.StaticGroup
@@ -82,6 +95,7 @@ export default class GameScene extends Phaser.Scene {
   private checkpointFlag!: Phaser.GameObjects.Triangle
   private checkpoint!: Phaser.GameObjects.Container
   private player!: Player
+  private playerStartPos: Phaser.GameObjects.Rectangle | null = null
   private playerShadowHitbox!: Phaser.GameObjects.Rectangle
   private coinsEmitter!: Phaser.GameObjects.Particles.ParticleEmitter
 
@@ -109,6 +123,9 @@ export default class GameScene extends Phaser.Scene {
   private stickedPlatform: OneWayPlatform | null = null
   private stickedVelocityX = 0
 
+  private isCustomLevel = false
+  private isCustomLevelRun = false
+
   constructor() {
     super({ key: SceneKey.Game })
   }
@@ -129,16 +146,22 @@ export default class GameScene extends Phaser.Scene {
     return this.player
   }
 
-  init(data: { number?: number; level?: DataLevel }) {
+  init(data: { number?: number; level?: DataLevel; isCustomLevelRun?: boolean }) {
     if (data.number) {
       this.currentLevel = data.number
       this.isCustomLevel = false
       this.levelData = levelsData[`level${this.currentLevel}`]
     } else if (data.level) {
+      this.currentLevel = null
       this.levelData = data.level
       this.isCustomLevel = true
     }
+
+    this.scene.stop(SceneKey.HUD)
+    this.scene.stop(SceneKey.Editor)
+    this.isCustomLevelRun = data.isCustomLevelRun ?? false
     this.registry.set(DataKey.IsCustomLevel, this.isCustomLevel)
+    this.registry.set(DataKey.IsCustomLevelRun, this.isCustomLevelRun)
   }
 
   create() {
@@ -208,7 +231,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // Plateformes
-    this.platforms = this.physics.add.staticGroup({
+    this.platforms = this.add.group({
       classType: Platform,
     })
     const platformsPos = this.levelData.platforms || []
@@ -217,6 +240,8 @@ export default class GameScene extends Phaser.Scene {
       const platform = new Platform(this, x, y, width, height)
       this.platforms.add(platform)
     }
+    this.platformsHitbox = this.physics.add.staticGroup()
+    this.createPlatformsHitbox()
 
     // Plateformes à sens unique
     this.oneWayPlatforms = this.physics.add.group({
@@ -249,10 +274,10 @@ export default class GameScene extends Phaser.Scene {
     this.target = new Target(this, this.levelData.target.x, this.levelData.target.y)
 
     // Pics
-    const spikes = this.physics.add.staticGroup()
+    this.spikes = this.physics.add.staticGroup()
     const spikesPos = this.levelData.spikes ?? []
     for (let i = 0; i < spikesPos.length; i++) {
-      this.addSpikes(spikes, spikesPos[i])
+      this.addSpikes(spikesPos[i])
     }
 
     const spikyBalls = this.physics.add.group({
@@ -271,7 +296,7 @@ export default class GameScene extends Phaser.Scene {
     this.fallingBlocksTriggers = this.physics.add.staticGroup()
     const fallingBlocksPos = this.levelData.fallingBlocks ?? []
     for (let i = 0; i < fallingBlocksPos.length; i++) {
-      this.addFallingBlock(this.fallingBlocks, this.fallingBlocksTriggers, fallingBlocksPos[i])
+      this.addFallingBlock(fallingBlocksPos[i])
     }
 
     // Event Blocks
@@ -319,6 +344,17 @@ export default class GameScene extends Phaser.Scene {
       ? { x: this.levelData.checkpoint!.x - TILE_SIZE, y: this.levelData.checkpoint!.y }
       : this.levelData.player
     this.player = new Player(this, startingPos.x, startingPos.y)
+    this.playerStartPos = null
+    if (this.isCustomLevel && !this.isCustomLevelRun) {
+      this.playerStartPos = this.add.rectangle(
+        this.levelData.player.x,
+        this.levelData.player.y,
+        TILE_SIZE,
+        TILE_SIZE,
+        0xffffff,
+        0.5
+      )
+    }
 
     this.playerShadowHitbox = this.add.rectangle(
       this.levelData.player.x,
@@ -341,7 +377,7 @@ export default class GameScene extends Phaser.Scene {
     })
 
     // Mort du joueur
-    this.physics.add.overlap(this.player, spikes, this.die, undefined, this)
+    this.physics.add.overlap(this.player, this.spikes, this.die, undefined, this)
     this.physics.add.overlap(this.player, this.fireballs, this.die, undefined, this)
     this.physics.add.overlap(this.player, spikyBalls, this.die, undefined, this)
     this.enemiesCollider = this.physics.add.overlap(
@@ -353,8 +389,8 @@ export default class GameScene extends Phaser.Scene {
     )
 
     // Ajouter la collision entre le joueur, les ennemis et le sol
-    this.physics.add.overlap(this.platforms, this.fireballs, this.destroyFireball, undefined, this)
-    this.platformsCollider = this.physics.add.collider(this.player, this.platforms)
+    this.physics.add.overlap(this.platformsHitbox, this.fireballs, this.destroyFireball, undefined, this)
+    this.platformsCollider = this.physics.add.collider(this.player, this.platformsHitbox)
     this.cannonsCollider = this.physics.add.collider(this.player, this.cannons)
     this.oneWayPlatformsCollider = this.physics.add.collider(
       this.player,
@@ -363,7 +399,7 @@ export default class GameScene extends Phaser.Scene {
       undefined,
       this
     )
-    this.physics.add.collider(this.enemies, this.platforms)
+    this.physics.add.collider(this.enemies, this.platformsHitbox)
     this.physics.add.collider(this.enemies, this.oneWayPlatforms)
     this.physics.add.collider(this.enemies, this.fallingBlocks)
     this.fallingBlocksCollider = this.physics.add.collider(this.player, this.fallingBlocks)
@@ -384,7 +420,7 @@ export default class GameScene extends Phaser.Scene {
     )
 
     if (this.boss) {
-      this.physics.add.collider(this.boss, this.platforms)
+      this.physics.add.collider(this.boss, this.platformsHitbox)
       this.bossCollider = this.physics.add.overlap(this.boss, this.player, this.handleBossCollision, undefined, this)
       this.physics.add.overlap(this.player, this.bossTrigger!, this.handleBossTrigger, undefined, this)
       this.events.on(EventKey.UnlockEventBlocks, this.unlockEventBlocks, this)
@@ -433,14 +469,36 @@ export default class GameScene extends Phaser.Scene {
 
     // Limite horizontale du monde
     this.events.on('postupdate', this.checkWorldBounds, this)
+
     this.events.once('shutdown', () => {
       this.events.off('postupdate', this.checkWorldBounds)
       this.events.off(EventKey.UnlockEventBlocks, this.unlockEventBlocks, this)
       this.events.off(EventKey.UnfreezePlayer, this.unfreezePlayer, this)
+      if (this.isCustomLevel) {
+        const editorScene = this.scene.get(SceneKey.Editor)
+        editorScene.events.off(EventKey.EditorToggle, this.toggleEditMode, this)
+        editorScene.events.off(EventKey.EditorPlaceItem, this.placeItem, this)
+        editorScene.events.off(EventKey.EditorPlaceItems, this.placeItems, this)
+        editorScene.events.off(EventKey.EditorRemoveItem, this.removeItem, this)
+        editorScene.events.off(EventKey.EditorExport, this.exportLevel, this)
+        editorScene.events.off(EventKey.EditorImport, this.importLevel, this)
+      }
     })
 
-    // HUD
-    this.scene.launch(SceneKey.HUD)
+    if (this.isCustomLevel) {
+      this.scene.launch(SceneKey.Editor)
+      const editorScene = this.scene.get(SceneKey.Editor)
+      editorScene.events.on(EventKey.EditorToggle, this.toggleEditMode, this)
+      editorScene.events.on(EventKey.EditorPlaceItem, this.placeItem, this)
+      editorScene.events.on(EventKey.EditorPlaceItems, this.placeItems, this)
+      editorScene.events.on(EventKey.EditorRemoveItem, this.removeItem, this)
+      editorScene.events.on(EventKey.EditorPlaytest, this.playTest, this)
+      editorScene.events.on(EventKey.EditorExport, this.exportLevel, this)
+      editorScene.events.on(EventKey.EditorImport, this.importLevel, this)
+    }
+    if (!this.isCustomLevel || this.isCustomLevelRun) {
+      this.scene.launch(SceneKey.HUD)
+    }
 
     // Transition
     this.scene.launch(SceneKey.Transition)
@@ -511,6 +569,156 @@ export default class GameScene extends Phaser.Scene {
       this.physics.world.bounds.height
     ) {
       this.die.call(this)
+    }
+  }
+
+  playTest() {
+    this.createPlatformsHitbox()
+    this.scene.resume()
+  }
+
+  removeItem(data: EditorRemoveItemProps) {
+    const { worldX, worldY } = data
+    const itemPosX = convertPointerToPos(worldX)
+    const itemPosY = convertPointerToPos(worldY)
+
+    const allItems = [
+      {
+        item: EditorItem.Platform,
+        data: this.levelData.platforms,
+        group: this.platforms,
+      },
+      {
+        item: EditorItem.Spike,
+        data: this.levelData.spikes,
+        group: this.spikes,
+      },
+      {
+        item: EditorItem.FallingBlock,
+        data: this.levelData.fallingBlocks,
+        group: this.fallingBlocksTriggers,
+      },
+    ]
+    allItems.forEach((object) => {
+      const itemIndex = (object.data || []).findIndex((item) => item.x === itemPosX && item.y === itemPosY)
+      if (itemIndex >= 0) {
+        object.data!.splice(itemIndex, 1)
+        const children = object.group.getChildren()
+        for (const child of children as GameItem[]) {
+          let childX = child.x
+          let childY = child.y
+          if (object.item === EditorItem.Spike) {
+            childX -= TILE_SIZE / 2
+            childY -= TILE_SIZE / 2
+          } else if (object.item === EditorItem.FallingBlock) {
+            childY += 1
+          }
+          if (childX === itemPosX && childY === itemPosY) {
+            if (object.item === EditorItem.FallingBlock) {
+              this.fallingBlocks.remove(child.getData('block'), true, true)
+            }
+            object.group.remove(child, true, true)
+            return
+          }
+        }
+      }
+    })
+  }
+
+  placeItems(data: EditorPlaceItemsProps) {
+    const { worldX, worldY, cols, rows, item, dir = 0 } = data
+    for (let row = 0; row !== rows; row += rows > 0 ? 1 : -1) {
+      const y = worldY + row * TILE_SIZE
+      for (let col = 0; col !== cols; col += cols > 0 ? 1 : -1) {
+        const x = worldX + col * TILE_SIZE
+        this.placeItem({
+          worldX: x,
+          worldY: y,
+          item,
+          dir,
+        })
+      }
+    }
+  }
+
+  placeItem(data: EditorPlaceItemProps) {
+    const { worldX, worldY, item, dir = 0 } = data
+    const itemPosX = convertPointerToPos(worldX)
+    const itemPosY = convertPointerToPos(worldY)
+
+    const offsetX = itemPosX + TILE_SIZE / 2
+    const offsetY = itemPosY + TILE_SIZE / 2
+    if (
+      (offsetX === this.levelData.player.x && offsetY === this.levelData.player.y) ||
+      (offsetX === this.levelData.target.x && offsetY === this.levelData.target.y)
+    ) {
+      return
+    }
+
+    this.removeItem({ worldX, worldY })
+
+    if (item === EditorItem.Platform) {
+      const platform = new Platform(this, itemPosX, itemPosY, TILE_SIZE, TILE_SIZE)
+      this.platforms.add(platform)
+      this.levelData.platforms.push({ x: itemPosX, y: itemPosY, width: TILE_SIZE, height: TILE_SIZE })
+    } else if (item === EditorItem.Bobby) {
+      this.levelData.player = { x: itemPosX + TILE_SIZE / 2, y: itemPosY + TILE_SIZE / 2 }
+      this.playerStartPos?.setPosition(this.levelData.player.x, this.levelData.player.y)
+    } else if (item === EditorItem.Target) {
+      this.levelData.target = { x: itemPosX + TILE_SIZE / 2, y: itemPosY + TILE_SIZE / 2 }
+      this.target.moveTo(this.levelData.target.x, this.levelData.target.y)
+    } else if (item === EditorItem.Spike) {
+      this.addSpikes({ x: itemPosX, y: itemPosY, dir })
+      this.levelData.spikes = this.levelData.spikes || []
+      this.levelData.spikes.push({ x: itemPosX, y: itemPosY, dir })
+    } else if (item === EditorItem.FallingBlock) {
+      this.addFallingBlock({ x: itemPosX, y: itemPosY })
+      this.levelData.fallingBlocks = this.levelData.fallingBlocks || []
+      this.levelData.fallingBlocks.push({ x: itemPosX, y: itemPosY })
+    }
+  }
+
+  async exportLevel() {
+    const levelData = {
+      ...this.levelData,
+      platforms: getPlatformsFromGrid(this.levelData.platforms),
+      ...(this.levelData.spikes && { spikes: getSpikesFromGrid(this.levelData.spikes) }),
+      ...(this.levelData.fallingBlocks && {
+        fallingBlocks: getFallingBlocksFromGrid(this.levelData.fallingBlocks),
+      }),
+    }
+    const levelEncoded = btoa(JSON.stringify(levelData))
+    await navigator.clipboard.writeText(levelEncoded)
+  }
+
+  importLevel(level: DataLevel) {
+    ;(Object.keys(this.levelData) as (keyof DataLevel)[]).forEach((key) => delete this.levelData[key])
+    const platformsCells = convertPlatformsToCells(level.platforms)
+    Object.assign(this.levelData, {
+      ...level,
+      platforms: platformsCells,
+      ...(level.spikes && { spikes: convertSpikesToCells(level.spikes) }),
+      ...(level.fallingBlocks && { fallingBlocks: convertFallingBlocksToCells(level.fallingBlocks) }),
+    })
+    this.restartGame()
+  }
+
+  createPlatformsHitbox() {
+    const platforms = this.isCustomLevel ? getPlatformsFromGrid(this.levelData.platforms) : this.levelData.platforms
+
+    this.platformsHitbox.clear(true, true)
+    platforms.forEach((col) => {
+      const { x, y, width, height } = col
+      const platform = this.add.rectangle(x, y, width, height, 0xab5236, 0).setOrigin(0)
+      this.platformsHitbox.add(platform)
+    })
+  }
+
+  toggleEditMode(isEditing: boolean) {
+    if (!isEditing) {
+      this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+    } else {
+      this.cameras.main.stopFollow()
     }
   }
 
@@ -600,7 +808,7 @@ export default class GameScene extends Phaser.Scene {
 
   checkPlayerRightAbovePlatform() {
     const platformsToCheck = [
-      ...this.platforms.getChildren(),
+      ...this.platformsHitbox.getChildren(),
       ...this.oneWayPlatforms.getChildren(),
       ...this.fallingBlocks.getChildren(),
     ]
@@ -672,12 +880,12 @@ export default class GameScene extends Phaser.Scene {
     this.restartGame()
   }
 
-  restartGame() {
+  restartGame(data?: object) {
     if (this.isTransitionning) return
 
     this.isTransitionning = true
     transitionEventsEmitter.emit(EventKey.TransitionStart)
-    transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.restart(), this)
+    transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.restart(data), this)
   }
 
   lose() {
@@ -724,7 +932,7 @@ export default class GameScene extends Phaser.Scene {
     this.player.stickedPlatform = platform
   }
 
-  addSpikes(group: Phaser.Physics.Arcade.StaticGroup, data: LevelSpike) {
+  addSpikes(data: LevelSpike) {
     const { x, y, dir = 0, num = 1 } = data
 
     for (let i = 0; i < num; i++) {
@@ -736,7 +944,7 @@ export default class GameScene extends Phaser.Scene {
         dir
       )
 
-      group.add(spike)
+      this.spikes.add(spike)
     }
   }
 
@@ -801,19 +1009,15 @@ export default class GameScene extends Phaser.Scene {
     group.add(eventBlock)
   }
 
-  addFallingBlock(
-    group: Phaser.Physics.Arcade.StaticGroup,
-    triggerGroup: Phaser.Physics.Arcade.StaticGroup,
-    data: LevelFallingBlock
-  ) {
+  addFallingBlock(data: LevelFallingBlock) {
     const { x, y, num = 1 } = data
     for (let i = 0; i < num; i++) {
       const fallingBlock = new FallingBlock(this, x + TILE_SIZE * i + 1, y)
-      group.add(fallingBlock)
+      this.fallingBlocks.add(fallingBlock)
       const trigger = this.add.rectangle(x + TILE_SIZE * i, y - 1, TILE_SIZE, TILE_SIZE)
       trigger.setOrigin(0)
       trigger.setData('block', fallingBlock)
-      triggerGroup.add(trigger)
+      this.fallingBlocksTriggers.add(trigger)
     }
   }
 
@@ -990,7 +1194,7 @@ export default class GameScene extends Phaser.Scene {
                   ? this.player.x + playerBody.halfWidth
                   : this.player.x - playerBody.halfWidth - 10
               const rectDetection = new Phaser.Geom.Rectangle(x, this.player.y, 10, playerBody.halfHeight)
-              const collidingPlatforms = this.platforms
+              const collidingPlatforms = this.platformsHitbox
                 .getChildren()
                 .filter((platform) =>
                   Phaser.Geom.Intersects.RectangleToRectangle(

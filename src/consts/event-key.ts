@@ -10,6 +10,11 @@ enum EventKey {
   ToggleCinematicFrames = 'toggleCinematicFrames',
   EditorPlaytest = 'editorPlaytest',
   EditorToggle = 'editorToggle',
+  EditorPlaceItem = 'editorPlaceItem',
+  EditorPlaceItems = 'editorPlaceItems',
+  EditorRemoveItem = 'editorRemoveItem',
+  EditorExport = 'editorExport',
+  EditorImport = 'editorImport',
 }
 
 export default EventKey

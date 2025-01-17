@@ -8,6 +8,7 @@ enum SceneKey {
   Settings = 'settings',
   Levels = 'levels',
   HUD = 'hud',
+  Editor = 'editor',
   Game = 'game',
 }
 

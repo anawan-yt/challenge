@@ -1,0 +1,6 @@
+{
+  "world": { "width": 4800, "height": 4800 },
+  "player": { "x": 520, "y": 520 },
+  "target": { "x": 840, "y": 520 },
+  "platforms": [{ "x": 480, "y": 560, "width": 80, "height": 80 }]
+}

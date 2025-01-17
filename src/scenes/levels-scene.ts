@@ -2,16 +2,16 @@ import AudioKey from '../consts/audio-key'
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
 import { NUM_LEVELS } from '../consts/globals'
-import { DataLevel, GameMode } from '../consts/level'
+import { GameMode } from '../consts/level'
 import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
 import IconButton from '../objects/ui/icon-button'
 import TextButton from '../objects/ui/text-button'
-import { EventBus } from '../utils/event-bus'
 import { getLevelInfo, getLevelTotalCoins } from '../utils/level'
 import { stringifyTime } from '../utils/time'
 import { transitionEventsEmitter } from '../utils/transition'
 import AudioScene from './audio-scene'
+import customLevel from '../levels/custom.json'
 
 export default class LevelsScene extends Phaser.Scene {
   constructor() {
@@ -21,12 +21,13 @@ export default class LevelsScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale
     this.scene.stop(SceneKey.HUD)
+    this.scene.stop(SceneKey.Editor)
     this.registry.set(DataKey.IsCheckpointActive, false)
     this.registry.set(DataKey.CoinsCollected, false)
 
     new IconButton(this, 80, 80, IconsKey.Back, () => this.goToScreen(SceneKey.Intro))
     new TextButton(this, width / 2, height - 120, 'Éditeur de niveaux', () => {
-      EventBus.emit(EventKey.EditorToggle)
+      this.goToScreen(SceneKey.Game, { level: customLevel })
     })
 
     // Niveaux
@@ -89,10 +90,6 @@ export default class LevelsScene extends Phaser.Scene {
         this.add.circle(x, y + 48, 8, levelInfo?.shinyCoin ? 0xffec27 : 0xffa300)
       }
     }
-
-    EventBus.on(EventKey.EditorPlaytest, (level: DataLevel) => {
-      this.goToScreen(SceneKey.Game, { level })
-    })
 
     this.scene.launch(SceneKey.Transition)
   }

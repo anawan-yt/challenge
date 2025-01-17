@@ -8,10 +8,23 @@ export default class IconButton extends Phaser.GameObjects.Container {
   private up: Phaser.GameObjects.Image
   private over: Phaser.GameObjects.Image
   private icon: Phaser.GameObjects.Sprite
+  private defaultFrame: number
+  private _isSelected: boolean
+
+  set isSelected(state: boolean) {
+    this._isSelected = state
+    if (state) {
+      this.onHover()
+    } else {
+      this.onUp()
+    }
+  }
 
   constructor(scene: Phaser.Scene, x: number, y: number, frame: number, onPointerDown: Function) {
     super(scene, x, y)
 
+    this.defaultFrame = frame
+    this._isSelected = false
     this.up = scene.add.image(0, 0, TextureKey.BtnIcon)
     this.over = scene.add.image(0, 0, TextureKey.BtnIcon, 1)
     this.over.setVisible(false)
@@ -26,13 +39,18 @@ export default class IconButton extends Phaser.GameObjects.Container {
     this.on('pointerout', this.onUp, this)
     this.on(
       'pointerdown',
-      (...args: any[]) => {
+      (pointer: Phaser.Input.Pointer, localX: number, localY: number, event: Phaser.Types.Input.EventData) => {
+        event.stopPropagation()
         this.onHover()
-        onPointerDown.call(scene, ...args)
+        onPointerDown.call(scene, pointer, localX, localY, event)
         ;(this.scene.scene.get(SceneKey.Audio) as AudioScene).playSfx(AudioKey.SfxButton)
       },
       this
     )
+  }
+
+  toggleIcon(frame: number) {
+    this.icon.setFrame(frame === parseInt(this.icon.frame.name) ? this.defaultFrame : frame)
   }
 
   onHover() {
@@ -42,8 +60,13 @@ export default class IconButton extends Phaser.GameObjects.Container {
   }
 
   onUp() {
+    if (this._isSelected) return
     this.up.setVisible(true)
     this.over.setVisible(false)
     this.icon.y = -4
+  }
+
+  rotateIcon() {
+    this.icon.angle = (this.icon.angle + 90) % 360
   }
 }

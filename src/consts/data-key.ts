@@ -5,6 +5,7 @@ enum DataKey {
   GameMode = 'gameMode',
   IsCheckpointActive = 'isCheckpointActive',
   IsCustomLevel = 'isCustomLevel',
+  IsCustomLevelRun = 'isCustomLevelRun',
 }
 
 export default DataKey

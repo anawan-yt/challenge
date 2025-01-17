@@ -7,11 +7,13 @@ import AudioScene from './scenes/audio-scene'
 import SettingsScene from './scenes/settings-scene'
 import LevelsScene from './scenes/levels-scene'
 import HUDScene from './scenes/hud-scene'
+import EditorScene from './scenes/editor-scene'
 import GameScene from './scenes/game-scene'
 
 export const GameConfig: Phaser.Types.Core.GameConfig = {
   title: 'Hey Bobby',
-  version: '0.0.13',
+  version: '0.0.16',
+  parent: 'game',
   type: Phaser.AUTO,
   backgroundColor: '#29ADFF',
   scale: {
@@ -40,6 +42,7 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
     LevelsScene,
     GameScene,
     HUDScene,
+    EditorScene,
     TransitionScene,
     AudioScene,
     SettingsScene,

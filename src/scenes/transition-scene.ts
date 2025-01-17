@@ -28,7 +28,7 @@ export default class TransitionScene extends Phaser.Scene {
 
   startTransition() {
     if (this.isOpen) {
-      if (this.input.keyboard) {
+      if (this.input.keyboard?.manager) {
         this.input.keyboard.manager.enabled = false
       }
       if (this.input.mouse) {

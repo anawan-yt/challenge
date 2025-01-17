@@ -6,7 +6,6 @@ import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
 import IconButton from '../objects/ui/icon-button'
 import Panel from '../objects/ui/panel'
-import { EventBus } from '../utils/event-bus'
 import { getLevelInfo, getLevelTotalCoins, updateLevelInfo } from '../utils/level'
 import { stringifyTime } from '../utils/time'
 import { transitionEventsEmitter } from '../utils/transition'
@@ -46,15 +45,13 @@ export default class HUDScene extends Phaser.Scene {
     }
 
     const gameScene = this.scene.get(SceneKey.Game) as GameScene
-
+    const isCustomLevel = this.registry.get(DataKey.IsCustomLevel)
     const btnPause = new IconButton(this, 1840, 80, IconsKey.Pause, this.togglePause)
-    this.input.keyboard?.on('keydown-P', this.togglePause, this)
-    this.input.keyboard?.on('keydown-ESC', this.togglePause, this)
-
-    if (this.registry.get(DataKey.IsCustomLevel)) {
-      new IconButton(this, 1740, 80, IconsKey.Edit, () => {
-        EventBus.emit(EventKey.EditorToggle)
-      })
+    if (!isCustomLevel) {
+      this.input.keyboard?.on('keydown-P', this.togglePause, this)
+      this.input.keyboard?.on('keydown-ESC', this.togglePause, this)
+    } else {
+      btnPause.disableInteractive().setVisible(false)
     }
 
     // Pièces
