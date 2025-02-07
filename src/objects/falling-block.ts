@@ -1,10 +1,17 @@
 import { TILE_SIZE } from '../consts/globals'
 
 export default class FallingBlock extends Phaser.GameObjects.Rectangle {
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  private trigger: Phaser.GameObjects.Rectangle
+
+  constructor(scene: Phaser.Scene, x: number, y: number, trigger: Phaser.GameObjects.Rectangle) {
     super(scene, x, y, TILE_SIZE - 4, TILE_SIZE - 4, 0x5f574f)
     this.setOrigin(0)
     scene.add.existing(this)
+    this.trigger = trigger
+  }
+
+  getTrigger() {
+    return this.trigger
   }
 
   fall() {

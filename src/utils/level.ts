@@ -62,3 +62,31 @@ export function resetBestTimes() {
   const resetTimesLevels = unlockedLevels.map((level) => ({ ...level, time: 0 }))
   localStorage.setItem('unlockedLevels', JSON.stringify(resetTimesLevels))
 }
+
+export function ensureLevelData(data: Partial<DataLevel>): DataLevel {
+  if (!data.world || !data.player || !data.target || !data.platforms) {
+    throw new Error('Les champs obligatoires (world, player, target, platforms) sont manquants.')
+  }
+
+  return {
+    isBoss: data.isBoss,
+    bossTrigger: data.bossTrigger,
+    world: data.world,
+    player: data.player,
+    target: data.target,
+    checkpoint: data.checkpoint,
+    hills: data.hills ?? [],
+    hillsFront: data.hillsFront ?? [],
+    clouds: data.clouds,
+    platforms: data.platforms,
+    oneWayPlatforms: data.oneWayPlatforms ?? [],
+    transformers: data.transformers ?? [],
+    fallingBlocks: data.fallingBlocks ?? [],
+    coins: data.coins ?? [],
+    enemies: data.enemies ?? [],
+    spikyBalls: data.spikyBalls ?? [],
+    spikes: data.spikes ?? [],
+    cannons: data.cannons ?? [],
+    eventBlocks: data.eventBlocks ?? [],
+  }
+}

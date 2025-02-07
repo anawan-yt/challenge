@@ -15,6 +15,10 @@ enum EventKey {
   EditorRemoveItem = 'editorRemoveItem',
   EditorExport = 'editorExport',
   EditorImport = 'editorImport',
+  EditorSelectItem = 'editorSelectItem',
+  EditorItemSelected = 'editorItemSelected',
+  EditorDeleteCurrent = 'editorDeleteCurrent',
+  EditorRotateCurrent = 'editorRotateCurrent',
 }
 
 export default EventKey

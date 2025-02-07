@@ -41,4 +41,9 @@ export enum IconsKey {
   Spike,
   Test,
   FallingBlock,
+  SpikyBall,
+  Select,
+  Active,
+  Delete,
+  Cannon,
 }

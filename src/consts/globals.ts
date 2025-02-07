@@ -22,6 +22,11 @@ export const FIREBALL_VELOCITY = 720
 export const BOSS_BOUNCE_VELOCITY = 1200
 export const CINEMATIC_FRAME_HEIGHT = 120
 
+export enum DepthLayer {
+  Fireball,
+  Cannon,
+}
+
 export enum PlayerMode {
   Platformer = 'platformer',
   Flappy = 'flappy',

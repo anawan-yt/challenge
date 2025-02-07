@@ -11,15 +11,17 @@ import {
 import {
   DataLevel,
   GameMode,
+  LevelCannon,
   LevelEnemy,
   LevelEventBlock,
   LevelFallingBlock,
   LevelOneWayPlatform,
+  LevelPlatform,
   LevelSpike,
   LevelSpikyBall,
 } from '../consts/level'
 import SceneKey from '../consts/scene-key'
-import TextureKey from '../consts/texture-key'
+import TextureKey, { IconsKey } from '../consts/texture-key'
 import { levelsData } from '../levels'
 import { addDesignEvent, addProgressionEvent, ProgressionEventType } from '../utils/analytics'
 import { getLevelTotalCoins, unlockLevel } from '../utils/level'
@@ -42,7 +44,17 @@ import Target from '../objects/target'
 import Coin from '../objects/coin'
 import Boss from '../objects/boss'
 import EventBlock from '../objects/event-block'
-import { EditorItem, EditorPlaceItemProps, EditorPlaceItemsProps, EditorRemoveItemProps } from '../consts/editor'
+import {
+  EditorType,
+  EditorPlaceItemProps,
+  EditorPlaceItemsProps,
+  EditorRemoveItemProps,
+  EditorItem,
+  EditorSelectItemProps,
+  EditorPlaceAtItemProps,
+  EDITOR_TYPE_TOOLS,
+  EditorTool,
+} from '../consts/editor'
 import {
   convertFallingBlocksToCells,
   convertPlatformsToCells,
@@ -56,8 +68,6 @@ import {
 interface Keys {
   [key: string]: { isDown: boolean }
 }
-
-type GameItem = Platform | Spike | FallingBlock
 
 export default class GameScene extends Phaser.Scene {
   private currentLevel: number | null = null
@@ -82,6 +92,7 @@ export default class GameScene extends Phaser.Scene {
   private platforms!: Phaser.GameObjects.Group
   private platformsHitbox!: Phaser.Physics.Arcade.StaticGroup
   private spikes!: Phaser.Physics.Arcade.StaticGroup
+  private spikyBalls!: Phaser.Physics.Arcade.Group
   private coins!: Phaser.Physics.Arcade.StaticGroup
   private oneWayPlatforms!: Phaser.Physics.Arcade.Group
   private cannons!: Phaser.Physics.Arcade.StaticGroup
@@ -125,6 +136,9 @@ export default class GameScene extends Phaser.Scene {
 
   private isCustomLevel = false
   private isCustomLevelRun = false
+  private itemsMap!: Map<string, EditorItem>
+  private currentItem: EditorItem | null = null
+  private currentItemIcon: Phaser.GameObjects.Image | null = null
 
   constructor() {
     super({ key: SceneKey.Game })
@@ -159,6 +173,7 @@ export default class GameScene extends Phaser.Scene {
 
     this.scene.stop(SceneKey.HUD)
     this.scene.stop(SceneKey.Editor)
+    this.itemsMap = new Map()
     this.isCustomLevelRun = data.isCustomLevelRun ?? false
     this.registry.set(DataKey.IsCustomLevel, this.isCustomLevel)
     this.registry.set(DataKey.IsCustomLevelRun, this.isCustomLevelRun)
@@ -236,9 +251,7 @@ export default class GameScene extends Phaser.Scene {
     })
     const platformsPos = this.levelData.platforms || []
     for (let i = 0; i < platformsPos.length; i++) {
-      const { x, y, width, height } = platformsPos[i]
-      const platform = new Platform(this, x, y, width, height)
-      this.platforms.add(platform)
+      this.addPlatform(platformsPos[i])
     }
     this.platformsHitbox = this.physics.add.staticGroup()
     this.createPlatformsHitbox()
@@ -251,7 +264,7 @@ export default class GameScene extends Phaser.Scene {
     })
     const oneWayPlatformsPos = this.levelData.oneWayPlatforms || []
     for (let i = 0; i < oneWayPlatformsPos.length; i++) {
-      this.addOneWayPlatform(this.oneWayPlatforms, oneWayPlatformsPos[i])
+      this.addOneWayPlatform(oneWayPlatformsPos[i])
     }
 
     this.fireballs = this.physics.add.group({
@@ -265,9 +278,7 @@ export default class GameScene extends Phaser.Scene {
     })
     const cannonsPos = this.levelData.cannons || []
     for (let i = 0; i < cannonsPos.length; i++) {
-      const { x, y, dir = 2 } = cannonsPos[i]
-      const cannon = new Cannon(this, x, y, dir, this.fireballs)
-      this.cannons.add(cannon)
+      this.addCannon(cannonsPos[i])
     }
 
     // Créer le téléporteur et les particules
@@ -280,13 +291,13 @@ export default class GameScene extends Phaser.Scene {
       this.addSpikes(spikesPos[i])
     }
 
-    const spikyBalls = this.physics.add.group({
+    this.spikyBalls = this.physics.add.group({
       allowGravity: false,
       immovable: true,
     })
     const spikyBallsPos = this.levelData.spikyBalls ?? []
     for (let i = 0; i < spikyBallsPos.length; i++) {
-      this.addSpikyBall(spikyBalls, spikyBallsPos[i])
+      this.addSpikyBall(spikyBallsPos[i])
     }
 
     // Plateformes sensibles
@@ -379,7 +390,7 @@ export default class GameScene extends Phaser.Scene {
     // Mort du joueur
     this.physics.add.overlap(this.player, this.spikes, this.die, undefined, this)
     this.physics.add.overlap(this.player, this.fireballs, this.die, undefined, this)
-    this.physics.add.overlap(this.player, spikyBalls, this.die, undefined, this)
+    this.physics.add.overlap(this.player, this.spikyBalls, this.die, undefined, this)
     this.enemiesCollider = this.physics.add.overlap(
       this.enemies,
       this.player,
@@ -480,6 +491,9 @@ export default class GameScene extends Phaser.Scene {
         editorScene.events.off(EventKey.EditorPlaceItem, this.placeItem, this)
         editorScene.events.off(EventKey.EditorPlaceItems, this.placeItems, this)
         editorScene.events.off(EventKey.EditorRemoveItem, this.removeItem, this)
+        editorScene.events.off(EventKey.EditorSelectItem, this.selectItem, this)
+        editorScene.events.off(EventKey.EditorDeleteCurrent, this.deleteCurrent, this)
+        editorScene.events.off(EventKey.EditorRotateCurrent, this.rotateCurrent, this)
         editorScene.events.off(EventKey.EditorExport, this.exportLevel, this)
         editorScene.events.off(EventKey.EditorImport, this.importLevel, this)
       }
@@ -492,9 +506,17 @@ export default class GameScene extends Phaser.Scene {
       editorScene.events.on(EventKey.EditorPlaceItem, this.placeItem, this)
       editorScene.events.on(EventKey.EditorPlaceItems, this.placeItems, this)
       editorScene.events.on(EventKey.EditorRemoveItem, this.removeItem, this)
+      editorScene.events.on(EventKey.EditorSelectItem, this.selectItem, this)
+      editorScene.events.on(EventKey.EditorDeleteCurrent, this.deleteCurrent, this)
+      editorScene.events.on(EventKey.EditorRotateCurrent, this.rotateCurrent, this)
       editorScene.events.on(EventKey.EditorPlaytest, this.playTest, this)
       editorScene.events.on(EventKey.EditorExport, this.exportLevel, this)
       editorScene.events.on(EventKey.EditorImport, this.importLevel, this)
+      this.currentItemIcon = this.add
+        .image(0, 0, TextureKey.Icons, IconsKey.Active)
+        .setOrigin(0)
+        .setAlpha(0)
+        .setDepth(100)
     }
     if (!this.isCustomLevel || this.isCustomLevelRun) {
       this.scene.launch(SceneKey.HUD)
@@ -574,7 +596,95 @@ export default class GameScene extends Phaser.Scene {
 
   playTest() {
     this.createPlatformsHitbox()
+    this.clearCurrentItem()
     this.scene.resume()
+  }
+
+  clearCurrentItem() {
+    this.currentItem = null
+    this.currentItemIcon?.setAlpha(0)
+    this.events.emit(EventKey.EditorItemSelected, this.currentItem)
+  }
+
+  getItemAt(x: number, y: number) {
+    const key = this.getMapKey(x, y)
+    return this.itemsMap.get(key) || null
+  }
+
+  getItem(worldX: number, worldY: number) {
+    const itemPosX = convertPointerToPos(worldX)
+    const itemPosY = convertPointerToPos(worldY)
+    return this.getItemAt(itemPosX, itemPosY)
+  }
+
+  selectItem(data: EditorSelectItemProps) {
+    const { worldX, worldY } = data
+
+    const item = this.getItem(worldX, worldY)
+    this.currentItem = item || null
+    this.events.emit(EventKey.EditorItemSelected, this.currentItem)
+
+    if (item) {
+      this.currentItemIcon?.setAlpha(1).setPosition(convertPointerToPos(worldX), convertPointerToPos(worldY))
+    } else {
+      this.currentItemIcon?.setAlpha(0)
+    }
+  }
+
+  rotateCurrent() {
+    if (!this.currentItem || !EDITOR_TYPE_TOOLS[this.currentItem.type]?.includes(EditorTool.Rotate)) return
+    const { data } = this.currentItem
+    if (!('dir' in data)) return
+    const newDir = ((data.dir ?? 0) + 1) % 4
+    this.removeItemAt(data.x, data.y)
+    this.placeItemAt(data.x, data.y, { item: this.currentItem.type, dir: newDir })
+  }
+
+  deleteCurrent() {
+    if (!this.currentItem) return
+    this.removeItemAt(this.currentItem.data.x, this.currentItem.data.y)
+    this.currentItem = null
+    this.currentItemIcon?.setAlpha(0)
+    this.events.emit(EventKey.EditorItemSelected, null)
+  }
+
+  removeItemAt(x: number, y: number) {
+    const key = this.getMapKey(x, y)
+
+    const item = this.itemsMap.get(key)
+    if (!item) return
+    let itemDataGroup
+
+    switch (item.type) {
+      case EditorType.Platform:
+        this.platforms.remove(item.object, true, true)
+        itemDataGroup = this.levelData.platforms
+        break
+      case EditorType.Spike:
+        this.spikes.remove(item.object, true, true)
+        itemDataGroup = this.levelData.spikes
+        break
+      case EditorType.FallingBlock:
+        this.fallingBlocksTriggers.remove(item.object.getTrigger(), true, true)
+        this.fallingBlocks.remove(item.object, true, true)
+        itemDataGroup = this.levelData.fallingBlocks
+        break
+      case EditorType.SpikyBall:
+        this.spikyBalls.remove(item.object, true, true)
+        itemDataGroup = this.levelData.spikyBalls
+        break
+      case EditorType.Cannon:
+        item.object.destroyDirImage()
+        this.cannons.remove(item.object, true, true)
+        itemDataGroup = this.levelData.cannons
+        break
+    }
+
+    this.itemsMap.delete(key)
+    if (itemDataGroup) {
+      const itemIndex = itemDataGroup.findIndex((item) => item.x === x && item.y === y)
+      itemDataGroup.splice(itemIndex, 1)
+    }
   }
 
   removeItem(data: EditorRemoveItemProps) {
@@ -582,47 +692,11 @@ export default class GameScene extends Phaser.Scene {
     const itemPosX = convertPointerToPos(worldX)
     const itemPosY = convertPointerToPos(worldY)
 
-    const allItems = [
-      {
-        item: EditorItem.Platform,
-        data: this.levelData.platforms,
-        group: this.platforms,
-      },
-      {
-        item: EditorItem.Spike,
-        data: this.levelData.spikes,
-        group: this.spikes,
-      },
-      {
-        item: EditorItem.FallingBlock,
-        data: this.levelData.fallingBlocks,
-        group: this.fallingBlocksTriggers,
-      },
-    ]
-    allItems.forEach((object) => {
-      const itemIndex = (object.data || []).findIndex((item) => item.x === itemPosX && item.y === itemPosY)
-      if (itemIndex >= 0) {
-        object.data!.splice(itemIndex, 1)
-        const children = object.group.getChildren()
-        for (const child of children as GameItem[]) {
-          let childX = child.x
-          let childY = child.y
-          if (object.item === EditorItem.Spike) {
-            childX -= TILE_SIZE / 2
-            childY -= TILE_SIZE / 2
-          } else if (object.item === EditorItem.FallingBlock) {
-            childY += 1
-          }
-          if (childX === itemPosX && childY === itemPosY) {
-            if (object.item === EditorItem.FallingBlock) {
-              this.fallingBlocks.remove(child.getData('block'), true, true)
-            }
-            object.group.remove(child, true, true)
-            return
-          }
-        }
-      }
-    })
+    this.removeItemAt(itemPosX, itemPosY)
+
+    if (this.currentItem && this.currentItem.data.x === itemPosX && this.currentItem.data.y === itemPosY) {
+      this.clearCurrentItem()
+    }
   }
 
   placeItems(data: EditorPlaceItemsProps) {
@@ -641,13 +715,10 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  placeItem(data: EditorPlaceItemProps) {
-    const { worldX, worldY, item, dir = 0 } = data
-    const itemPosX = convertPointerToPos(worldX)
-    const itemPosY = convertPointerToPos(worldY)
-
-    const offsetX = itemPosX + TILE_SIZE / 2
-    const offsetY = itemPosY + TILE_SIZE / 2
+  placeItemAt(x: number, y: number, data: EditorPlaceAtItemProps) {
+    const { item, dir } = data
+    const offsetX = x + TILE_SIZE / 2
+    const offsetY = y + TILE_SIZE / 2
     if (
       (offsetX === this.levelData.player.x && offsetY === this.levelData.player.y) ||
       (offsetX === this.levelData.target.x && offsetY === this.levelData.target.y)
@@ -655,27 +726,45 @@ export default class GameScene extends Phaser.Scene {
       return
     }
 
-    this.removeItem({ worldX, worldY })
+    this.removeItemAt(x, y)
 
-    if (item === EditorItem.Platform) {
-      const platform = new Platform(this, itemPosX, itemPosY, TILE_SIZE, TILE_SIZE)
-      this.platforms.add(platform)
-      this.levelData.platforms.push({ x: itemPosX, y: itemPosY, width: TILE_SIZE, height: TILE_SIZE })
-    } else if (item === EditorItem.Bobby) {
-      this.levelData.player = { x: itemPosX + TILE_SIZE / 2, y: itemPosY + TILE_SIZE / 2 }
+    if (item === EditorType.Platform) {
+      this.addPlatform({ x, y, width: TILE_SIZE, height: TILE_SIZE })
+      this.levelData.platforms.push({ x, y, width: TILE_SIZE, height: TILE_SIZE })
+    } else if (item === EditorType.Bobby) {
+      this.levelData.player = { x: x + TILE_SIZE / 2, y: y + TILE_SIZE / 2 }
       this.playerStartPos?.setPosition(this.levelData.player.x, this.levelData.player.y)
-    } else if (item === EditorItem.Target) {
-      this.levelData.target = { x: itemPosX + TILE_SIZE / 2, y: itemPosY + TILE_SIZE / 2 }
+    } else if (item === EditorType.Target) {
+      this.levelData.target = { x: x + TILE_SIZE / 2, y: y + TILE_SIZE / 2 }
       this.target.moveTo(this.levelData.target.x, this.levelData.target.y)
-    } else if (item === EditorItem.Spike) {
-      this.addSpikes({ x: itemPosX, y: itemPosY, dir })
+    } else if (item === EditorType.Spike) {
+      this.addSpikes({ x, y, dir })
       this.levelData.spikes = this.levelData.spikes || []
-      this.levelData.spikes.push({ x: itemPosX, y: itemPosY, dir })
-    } else if (item === EditorItem.FallingBlock) {
-      this.addFallingBlock({ x: itemPosX, y: itemPosY })
+      this.levelData.spikes.push({ x, y, dir })
+    } else if (item === EditorType.FallingBlock) {
+      this.addFallingBlock({ x, y })
       this.levelData.fallingBlocks = this.levelData.fallingBlocks || []
-      this.levelData.fallingBlocks.push({ x: itemPosX, y: itemPosY })
+      this.levelData.fallingBlocks.push({ x, y })
+    } else if (item === EditorType.SpikyBall) {
+      this.addSpikyBall({ x, y })
+      this.levelData.spikyBalls = this.levelData.spikyBalls || []
+      this.levelData.spikyBalls.push({ x, y })
+    } else if (item === EditorType.Cannon) {
+      this.addCannon({ x, y, dir })
+      this.levelData.cannons = this.levelData.cannons || []
+      this.levelData.cannons.push({ x, y, dir })
     }
+
+    this.currentItem = this.getItemAt(x, y)
+    this.events.emit(EventKey.EditorItemSelected, this.currentItem)
+    this.currentItemIcon?.setAlpha(1).setPosition(convertPointerToPos(x), convertPointerToPos(y))
+  }
+
+  placeItem(data: EditorPlaceItemProps) {
+    const { worldX, worldY, ...rest } = data
+    const itemPosX = convertPointerToPos(worldX)
+    const itemPosY = convertPointerToPos(worldY)
+    this.placeItemAt(itemPosX, itemPosY, rest as EditorPlaceItemProps)
   }
 
   async exportLevel() {
@@ -921,10 +1010,36 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  addOneWayPlatform(group: Phaser.Physics.Arcade.Group, data: LevelOneWayPlatform) {
+  addPlatform(data: LevelPlatform) {
+    const { x, y, width, height } = data
+    const platform = new Platform(this, x, y, width, height)
+    this.platforms.add(platform)
+    this.addMapItem(x, y, { type: EditorType.Platform, object: platform, data })
+  }
+
+  addCannon(data: LevelCannon) {
+    const { x, y, dir = 0 } = data
+    const cannon = new Cannon(this, x, y, dir, this.fireballs, this.isCustomLevel && !this.isCustomLevelRun)
+    this.cannons.add(cannon)
+    this.addMapItem(x, y, { type: EditorType.Cannon, object: cannon, data })
+  }
+
+  addMapItem(x: number, y: number, item: EditorItem) {
+    if (!this.isCustomLevel) return
+
+    const key = this.getMapKey(x, y)
+    if (this.itemsMap.has(key)) return
+    this.itemsMap.set(key, item)
+  }
+
+  getMapKey(x: number, y: number) {
+    return `${x}_${y}`
+  }
+
+  addOneWayPlatform(data: LevelOneWayPlatform) {
     const { x, y, width, points } = data
     const platform = new OneWayPlatform(this, x, y, width, points)
-    group.add(platform)
+    this.oneWayPlatforms.add(platform)
   }
 
   stickPlayerToPlatform: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback = (_: any, platform: any) => {
@@ -945,10 +1060,11 @@ export default class GameScene extends Phaser.Scene {
       )
 
       this.spikes.add(spike)
+      this.addMapItem(x, y, { type: EditorType.Spike, object: spike, data })
     }
   }
 
-  addSpikyBall(group: Phaser.Physics.Arcade.Group, data: LevelSpikyBall) {
+  addSpikyBall(data: LevelSpikyBall) {
     const { x, y, points, startAt = 0 } = data
     let spikyBall
 
@@ -959,7 +1075,8 @@ export default class GameScene extends Phaser.Scene {
       spikyBall = new SpikyBall(this, x, y)
     }
 
-    group.add(spikyBall)
+    this.spikyBalls.add(spikyBall)
+    this.addMapItem(x, y, { type: EditorType.SpikyBall, object: spikyBall, data })
   }
 
   addEnemy(group: Phaser.Physics.Arcade.Group, data: LevelEnemy) {
@@ -1012,12 +1129,13 @@ export default class GameScene extends Phaser.Scene {
   addFallingBlock(data: LevelFallingBlock) {
     const { x, y, num = 1 } = data
     for (let i = 0; i < num; i++) {
-      const fallingBlock = new FallingBlock(this, x + TILE_SIZE * i + 1, y)
-      this.fallingBlocks.add(fallingBlock)
       const trigger = this.add.rectangle(x + TILE_SIZE * i, y - 1, TILE_SIZE, TILE_SIZE)
       trigger.setOrigin(0)
+      const fallingBlock = new FallingBlock(this, x + TILE_SIZE * i + 1, y, trigger)
+      this.fallingBlocks.add(fallingBlock)
       trigger.setData('block', fallingBlock)
       this.fallingBlocksTriggers.add(trigger)
+      this.addMapItem(x, y, { type: EditorType.FallingBlock, object: fallingBlock, data })
     }
   }
 
