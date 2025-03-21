@@ -46,4 +46,9 @@ export enum IconsKey {
   Active,
   Delete,
   Cannon,
+  Plus,
+  Minus,
+  OneWayPlatform,
+  Enemy,
+  Chevron,
 }

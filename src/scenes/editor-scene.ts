@@ -15,6 +15,7 @@ import { TILE_SIZE } from '../consts/globals'
 import SceneKey from '../consts/scene-key'
 import { IconsKey } from '../consts/texture-key'
 import IconButton from '../objects/ui/icon-button'
+import NumberChoice from '../objects/ui/number-choice'
 import { convertPointerToPos } from '../utils/editor'
 import { transitionEventsEmitter } from '../utils/transition'
 import GameScene from './game-scene'
@@ -28,19 +29,22 @@ export default class EditorScene extends Phaser.Scene {
   private isDrawing!: boolean
   private btnToggle!: IconButton
   private mode!: EditorMode
-  private item!: EditorType
+  private type!: EditorType
   private editButtonsPanel!: Phaser.GameObjects.Container
   private editButtons!: EditorModeButtons
   private toolButtonsPanel!: Phaser.GameObjects.Container
   private toolButtons!: EditorToolButtons
-  private itemButtons!: EditorTypeButtons
+  private typeButtons!: EditorTypeButtons
   private rectGraphics!: Phaser.GameObjects.Graphics
   private rectInfo: EditorRectInfo | null = null
   private spikeDir!: number
   private cannonDir!: number
   private isCustomLevelRun!: boolean
   private spaceKey: Phaser.Input.Keyboard.Key | undefined
-  // private currentItem: EditorItem | null = null
+  private currentItem: EditorItem | null = null
+  private moveX!: number
+  private moveY!: number
+  private startAt!: number
 
   constructor() {
     super({ key: SceneKey.Editor })
@@ -58,6 +62,8 @@ export default class EditorScene extends Phaser.Scene {
     this.rectGraphics = this.add.graphics()
     this.spikeDir = 0
     this.cannonDir = 0
+    this.moveX = 0
+    this.moveY = 0
 
     this.input.on('pointerdown', this.handlePointerDown, this)
     this.input.on('pointermove', this.handlePointerMove, this)
@@ -109,30 +115,36 @@ export default class EditorScene extends Phaser.Scene {
       this.selectType(EditorType.Platform)
     })
     btnPlatform.isSelected = true
-    const btnFallingBlock = new IconButton(this, 80, 380, IconsKey.FallingBlock, () => {
+    const btnOneWayPlatform = new IconButton(this, 80, 380, IconsKey.OneWayPlatform, () => {
+      this.selectType(EditorType.OneWayPlatform)
+    })
+    const btnFallingBlock = new IconButton(this, 80, 480, IconsKey.FallingBlock, () => {
       this.selectType(EditorType.FallingBlock)
     })
-    const btnSpike = new IconButton(this, 80, 480, IconsKey.Spike, () => {
-      if (this.item === EditorType.Spike) {
+    const btnSpike = new IconButton(this, 80, 580, IconsKey.Spike, () => {
+      if (this.type === EditorType.Spike) {
         this.spikeDir = (this.spikeDir + 1) % 4
         btnSpike.rotateIcon()
       } else {
         this.selectType(EditorType.Spike)
       }
     })
-    const btnSpikyBall = new IconButton(this, 80, 580, IconsKey.SpikyBall, () => {
+    const btnSpikyBall = new IconButton(this, 80, 680, IconsKey.SpikyBall, () => {
       this.selectType(EditorType.SpikyBall)
     })
-    const btnCannon = new IconButton(this, 80, 680, IconsKey.Cannon, () => {
-      if (this.item === EditorType.Cannon) {
+    const btnCannon = new IconButton(this, 80, 780, IconsKey.Cannon, () => {
+      if (this.type === EditorType.Cannon) {
         this.cannonDir = (this.cannonDir + 1) % 4
         btnCannon.rotateIcon()
       } else {
         this.selectType(EditorType.Cannon)
       }
     })
+    const btnEnemy = new IconButton(this, 80, 880, IconsKey.Enemy, () => {
+      this.selectType(EditorType.Enemy)
+    })
 
-    this.itemButtons = {
+    this.typeButtons = {
       [EditorType.Bobby]: {
         btn: btnBobby,
         isMulti: false,
@@ -149,6 +161,10 @@ export default class EditorScene extends Phaser.Scene {
         btn: btnFallingBlock,
         isMulti: true,
       },
+      [EditorType.OneWayPlatform]: {
+        btn: btnOneWayPlatform,
+        isMulti: true,
+      },
       [EditorType.Spike]: {
         btn: btnSpike,
         isMulti: true,
@@ -160,6 +176,9 @@ export default class EditorScene extends Phaser.Scene {
       [EditorType.Cannon]: {
         btn: btnCannon,
         isMulti: true,
+      },
+      [EditorType.Enemy]: {
+        btn: btnEnemy,
       },
     } as EditorTypeButtons
 
@@ -176,12 +195,61 @@ export default class EditorScene extends Phaser.Scene {
       this.events.emit(EventKey.EditorRotateCurrent)
     })
 
+    const btnDirection = new IconButton(this, width / 2, height - 80, IconsKey.Chevron, () => {
+      btnDirection.rotateIcon(180)
+      this.events.emit(EventKey.EditorChangeDirCurrent)
+    })
+
+    const choiceX = new NumberChoice({
+      scene: this,
+      x: width / 2,
+      y: height - 80,
+      title: 'X',
+      onUpdate: (value: number) => {
+        this.moveX = value
+        this.moveY = 0
+        this.updateMoveXY()
+        this.updateCurrentItem()
+      },
+    })
+
+    const choiceY = new NumberChoice({
+      scene: this,
+      x: width / 2,
+      y: height - 80,
+      title: 'Y',
+      onUpdate: (value: number) => {
+        this.moveX = 0
+        this.moveY = value
+        this.updateMoveXY()
+        this.updateCurrentItem()
+      },
+    })
+
+    const choiceStartAt = new NumberChoice({
+      scene: this,
+      x: width / 2,
+      y: height - 80,
+      step: 0.05,
+      min: 0,
+      max: 1,
+      title: 'Délai',
+      onUpdate: (value: number) => {
+        this.startAt = value
+        this.updateCurrentItem()
+      },
+    })
+
     this.toolButtons = {
       [EditorTool.Delete]: btnDelete,
       [EditorTool.Rotate]: btnRotate,
+      [EditorTool.Direction]: btnDirection,
+      [EditorTool.MoveX]: choiceX,
+      [EditorTool.MoveY]: choiceY,
+      [EditorTool.StartAt]: choiceStartAt,
     } as EditorToolButtons
 
-    this.toolButtonsPanel = this.add.container(0, 0, [btnDelete, btnRotate]).setVisible(false)
+    this.toolButtonsPanel = this.add.container(0, 0, Object.values(this.toolButtons)).setVisible(false)
 
     this.editButtonsPanel = this.add.container(0, 0, [
       btnSelect,
@@ -190,12 +258,14 @@ export default class EditorScene extends Phaser.Scene {
       btnDraw,
       btnRect,
       btnPlatform,
+      btnOneWayPlatform,
       btnBobby,
       btnTarget,
       btnSpike,
       btnFallingBlock,
       btnSpikyBall,
       btnCannon,
+      btnEnemy,
       btnExport,
       btnImport,
       this.toolButtonsPanel,
@@ -217,6 +287,22 @@ export default class EditorScene extends Phaser.Scene {
     this.events.off(EventKey.EditorItemSelected, this.handleItemSelected, this)
   }
 
+  updateCurrentItem() {
+    if (!this.currentItem) return
+    const { x, y } = this.currentItem.data
+    this.events.emit(EventKey.EditorPlaceItem, {
+      worldX: x,
+      worldY: y,
+      type: this.currentItem.type,
+      ...(this.moveX !== 0 || this.moveY !== 0
+        ? {
+            points: [{ x: x + this.moveX * TILE_SIZE, y: y + this.moveY * TILE_SIZE }],
+            ...(this.startAt !== 0 ? { startAt: this.startAt } : {}),
+          }
+        : {}),
+    })
+  }
+
   async importLevel() {
     try {
       const data = await navigator.clipboard.readText()
@@ -230,7 +316,7 @@ export default class EditorScene extends Phaser.Scene {
   }
 
   handleItemSelected(item: EditorItem | null) {
-    // this.currentItem = item
+    this.currentItem = item
     if (!item) {
       this.toolButtonsPanel.setVisible(false)
     } else {
@@ -240,21 +326,47 @@ export default class EditorScene extends Phaser.Scene {
       })
 
       const toolsToShow = Object.keys(this.toolButtons).filter((key) => tools.includes(key as EditorTool))
-      const startPosX = this.scale.width / 2 - (toolsToShow.length % 2 === 0 ? 50 : 0)
-      toolsToShow.forEach((key, index) => {
-        this.toolButtons[key as EditorTool]
-          .setVisible(true)
-          .setPosition(startPosX + index * 100, this.scale.height - 80)
+      const gap = 20
+      const totalWidth =
+        toolsToShow.reduce((acc, key) => acc + this.toolButtons[key as EditorTool].width, 0) +
+        (toolsToShow.length - 1) * gap
+      let startPosX = (this.scale.width - totalWidth) / 2 + TILE_SIZE / 2
+      toolsToShow.forEach((key) => {
+        const tool = this.toolButtons[key as EditorTool]
+        tool.setVisible(true).setPosition(startPosX, this.scale.height - 80)
+        startPosX += tool.width + gap
       })
       this.toolButtonsPanel.setVisible(true)
+
+      if (this.currentItem?.type === EditorType.SpikyBall) {
+        this.moveX = this.currentItem.data.points
+          ? (this.currentItem.data.points[0].x - this.currentItem.data.x) / TILE_SIZE
+          : 0
+        this.moveY = this.currentItem.data.points
+          ? (this.currentItem.data.points[0].y - this.currentItem.data.y) / TILE_SIZE
+          : 0
+        this.updateMoveXY()
+        this.startAt = this.currentItem.data.startAt || 0
+        ;(this.toolButtons[EditorTool.StartAt] as NumberChoice).value = this.startAt
+      }
+
+      if (this.currentItem?.type === EditorType.Enemy) {
+        const dir = this.currentItem.data.dir ?? 1
+        ;(this.toolButtons[EditorTool.Direction] as IconButton).setIconRotation(dir === 1 ? 0 : 180)
+      }
     }
   }
 
+  updateMoveXY() {
+    ;(this.toolButtons[EditorTool.MoveX] as NumberChoice).value = this.moveX
+    ;(this.toolButtons[EditorTool.MoveY] as NumberChoice).value = this.moveY
+  }
+
   selectType(to: EditorType) {
-    this.item = to
-    for (const key in this.itemButtons) {
+    this.type = to
+    for (const key in this.typeButtons) {
       const item = key as EditorType
-      this.itemButtons[item].btn.isSelected = item === to
+      this.typeButtons[item].btn.isSelected = item === to
     }
     this.selectMode(EditorMode.Draw)
   }
@@ -297,7 +409,7 @@ export default class EditorScene extends Phaser.Scene {
   }
 
   handlePointerMove(pointer: Phaser.Input.Pointer) {
-    if (!this.isEditing || (this.mode === EditorMode.Rect && !this.itemButtons[this.item].isMulti)) return
+    if (!this.isEditing || (this.mode === EditorMode.Rect && !this.typeButtons[this.type].isMulti)) return
 
     if ((this.mode === EditorMode.Move || this.spaceKey?.isDown) && this.dragStartPoint && this.cameraStartPoint) {
       const dx = this.dragStartPoint.x - pointer.x
@@ -317,8 +429,8 @@ export default class EditorScene extends Phaser.Scene {
     if (this.mode === EditorMode.Rect && this.dragStartPoint && this.rectInfo) {
       this.events.emit(EventKey.EditorPlaceItems, {
         ...this.rectInfo,
-        item: this.item,
-        ...(this.item === EditorType.Spike && { dir: this.spikeDir }),
+        type: this.type,
+        ...(this.type === EditorType.Spike && { dir: this.spikeDir }),
       })
     }
 
@@ -376,9 +488,9 @@ export default class EditorScene extends Phaser.Scene {
     this.events.emit(EventKey.EditorPlaceItem, {
       worldX,
       worldY,
-      item: this.item,
-      ...(this.item === EditorType.Spike && { dir: this.spikeDir }),
-      ...(this.item === EditorType.Cannon && { dir: this.cannonDir }),
+      type: this.type,
+      ...(this.type === EditorType.Spike && { dir: this.spikeDir }),
+      ...(this.type === EditorType.Cannon && { dir: this.cannonDir }),
     })
   }
 

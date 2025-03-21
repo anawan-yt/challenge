@@ -66,7 +66,11 @@ export default class IconButton extends Phaser.GameObjects.Container {
     this.icon.y = -4
   }
 
-  rotateIcon() {
-    this.icon.angle = (this.icon.angle + 90) % 360
+  rotateIcon(angle = 90) {
+    this.icon.angle = (this.icon.angle + angle) % 360
+  }
+
+  setIconRotation(angle: number) {
+    this.icon.angle = angle
   }
 }

@@ -1,11 +1,21 @@
 import Cannon from '../objects/cannon'
 import FallingBlock from '../objects/falling-block'
 import MovingSpikyBall from '../objects/moving-spiky-ball'
+import OneWayPlatform from '../objects/one-way-platform'
 import Platform from '../objects/platform'
 import Spike from '../objects/spike'
 import SpikyBall from '../objects/spiky-ball'
 import IconButton from '../objects/ui/icon-button'
-import { LevelCannon, LevelFallingBlock, LevelPlatform, LevelSpike, LevelSpikyBall } from './level'
+import NumberChoice from '../objects/ui/number-choice'
+import {
+  LevelCannon,
+  LevelEnemy,
+  LevelFallingBlock,
+  LevelOneWayPlatform,
+  LevelPlatform,
+  LevelSpike,
+  LevelSpikyBall,
+} from './level'
 
 export enum EditorMode {
   Select = 'select',
@@ -23,28 +33,43 @@ export enum EditorType {
   FallingBlock = 'fallingBlock',
   SpikyBall = 'spikyBall',
   Cannon = 'cannon',
+  OneWayPlatform = 'oneWayPlatform',
+  Enemy = 'enemy',
 }
 
 export enum EditorTool {
   Delete = 'delete',
   Rotate = 'rotate',
+  MoveX = 'moveX',
+  MoveY = 'moveY',
+  StartAt = 'startAt',
+  Direction = 'direction',
 }
 
 export const EDITOR_TYPE_TOOLS: Partial<Record<EditorType, EditorTool[]>> = {
   [EditorType.Spike]: [EditorTool.Rotate],
   [EditorType.Cannon]: [EditorTool.Rotate],
+  [EditorType.Enemy]: [EditorTool.Direction],
+  [EditorType.SpikyBall]: [EditorTool.MoveX, EditorTool.MoveY, EditorTool.StartAt],
+}
+
+export interface EditorPoint {
+  x: number
+  y: number
 }
 
 export interface EditorPlaceItemProps {
   worldX: number
   worldY: number
-  item: EditorType
+  type: EditorType
   dir?: number
 }
 
 export interface EditorPlaceAtItemProps {
-  item: EditorType
+  type: EditorType
   dir?: number
+  points?: EditorPoint[]
+  startAt?: number
 }
 
 export interface EditorPlaceItemProps extends EditorPlaceAtItemProps {
@@ -86,7 +111,7 @@ export type EditorTypeButtons = {
 }
 
 export type EditorToolButtons = {
-  [key in EditorTool]: IconButton
+  [key in EditorTool]: IconButton | NumberChoice
 }
 
 export interface EditorItemBase<TObject, TData> {
@@ -97,6 +122,10 @@ export interface EditorItemBase<TObject, TData> {
 
 export interface EditorPlatform extends EditorItemBase<Platform, LevelPlatform> {
   type: EditorType.Platform
+}
+
+export interface EditorOneWayPlatform extends EditorItemBase<OneWayPlatform, LevelOneWayPlatform> {
+  type: EditorType.OneWayPlatform
 }
 
 export interface EditorSpike extends EditorItemBase<Spike, LevelSpike> {
@@ -115,4 +144,16 @@ export interface EditorCannon extends EditorItemBase<Cannon, LevelCannon> {
   type: EditorType.Cannon
 }
 
-export type EditorItem = EditorPlatform | EditorSpike | EditorFallingBlock | EditorSpikyBall | EditorCannon
+export interface EditorEnemy
+  extends EditorItemBase<Phaser.GameObjects.Sprite | Phaser.GameObjects.Rectangle, LevelEnemy> {
+  type: EditorType.Enemy
+}
+
+export type EditorItem =
+  | EditorPlatform
+  | EditorSpike
+  | EditorFallingBlock
+  | EditorSpikyBall
+  | EditorCannon
+  | EditorOneWayPlatform
+  | EditorEnemy

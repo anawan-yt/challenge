@@ -1,5 +1,5 @@
 import { TILE_SIZE } from '../consts/globals'
-import { LevelFallingBlock, LevelPlatform, LevelSpike } from '../consts/level'
+import { LevelFallingBlock, LevelOneWayPlatform, LevelPlatform, LevelSpike } from '../consts/level'
 
 export function convertPointerToPos(pos: number) {
   return Math.floor(pos / TILE_SIZE) * TILE_SIZE
@@ -192,4 +192,37 @@ export function getPlatformsFromGrid(cells: LevelPlatform[]) {
   }
 
   return groupedRectangles
+}
+
+export function getOneWayPlatformsFromGrid(cells: LevelOneWayPlatform[]) {
+  const platforms = [...cells].sort((a, b) => a.y - b.y || a.x - b.x)
+  const platformMap = new Map()
+  platforms.forEach(({ x, y }) => {
+    platformMap.set(`${x},${y}`, { x, y })
+  })
+
+  const groupedRows: LevelOneWayPlatform[] = []
+  platformMap.forEach((platform, key) => {
+    if (!platformMap.has(key)) {
+      return
+    }
+
+    const row = {
+      x: platform.x,
+      y: platform.y,
+      width: TILE_SIZE,
+    }
+
+    let currentX = platform.x + TILE_SIZE
+    while (platformMap.has(`${currentX},${platform.y}`)) {
+      row.width += TILE_SIZE
+      platformMap.delete(`${currentX},${platform.y}`)
+      currentX += TILE_SIZE
+    }
+
+    groupedRows.push(row)
+    platformMap.delete(key)
+  })
+
+  return groupedRows
 }
