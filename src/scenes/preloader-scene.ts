@@ -81,6 +81,7 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.image(TextureKey.Enemy2, 'enemy2.png')
     this.load.image(TextureKey.Hill, 'hill.png')
     this.load.image(TextureKey.Hill2, 'hill2.png')
+    this.load.image(TextureKey.Bump, 'bump.png')
 
     this.load.audio(AudioKey.Music, 'audio/music.mp3')
     this.load.audio(AudioKey.SfxJump, 'audio/sfx-jump.mp3')

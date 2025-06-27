@@ -14,6 +14,7 @@ enum TextureKey {
   Hill = 'hill',
   Hill2 = 'hill2',
   Grid = 'grid',
+  Bump = 'bump',
   Icons = 'icons',
   FontHeading = 'Luckiest Guy',
   FontBody = 'Lato',
@@ -51,4 +52,6 @@ export enum IconsKey {
   OneWayPlatform,
   Enemy,
   Chevron,
+  Bump,
+  Coin,
 }

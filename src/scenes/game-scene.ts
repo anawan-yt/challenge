@@ -1,17 +1,20 @@
 import AnalyticsKey from '../consts/analytics-key'
 import {
   BOSS_BOUNCE_VELOCITY,
+  BUMP_OFF_VELOCITY,
   COIN_SIZE,
   ENEMY2_JUMP_DELAY,
   ENEMY_VELOCITY,
-  NUM_LEVELS,
+  NUM_LEVELS_BY_WORLD,
   PlayerMode,
   TILE_SIZE,
 } from '../consts/globals'
 import {
   DataLevel,
   GameMode,
+  LevelBump,
   LevelCannon,
+  LevelCoin,
   LevelEnemy,
   LevelEventBlock,
   LevelFallingBlock,
@@ -65,6 +68,7 @@ import {
   getFallingBlocksFromGrid,
   getOneWayPlatformsFromGrid,
 } from '../utils/editor'
+import Bump from '../objects/bump'
 
 interface Keys {
   [key: string]: { isDown: boolean }
@@ -112,6 +116,7 @@ export default class GameScene extends Phaser.Scene {
   private playerStartPos: Phaser.GameObjects.Rectangle | null = null
   private playerShadowHitbox!: Phaser.GameObjects.Rectangle
   private coinsEmitter!: Phaser.GameObjects.Particles.ParticleEmitter
+  private bumps!: Phaser.Physics.Arcade.StaticGroup
 
   private enemiesCollider!: Phaser.Physics.Arcade.Collider
   private bossCollider!: Phaser.Physics.Arcade.Collider
@@ -126,6 +131,7 @@ export default class GameScene extends Phaser.Scene {
   private checkpointTrigger!: Phaser.Physics.Arcade.Collider
   private coinsTriggers!: Phaser.Physics.Arcade.Collider
   private targetTrigger!: Phaser.Physics.Arcade.Collider
+  private bumpsCollider!: Phaser.Physics.Arcade.Collider
   private zKey!: Phaser.Input.Keyboard.Key
   private upKey!: Phaser.Input.Keyboard.Key
   private spaceKey!: Phaser.Input.Keyboard.Key
@@ -171,6 +177,7 @@ export default class GameScene extends Phaser.Scene {
     } else if (data.level) {
       this.currentLevel = null
       this.levelData = data.level
+      this.importLevel({ ...data.level }, false)
       this.isCustomLevel = true
     }
 
@@ -274,7 +281,16 @@ export default class GameScene extends Phaser.Scene {
       allowGravity: false,
     })
 
-    // Canons
+    // Bumps
+    this.bumps = this.physics.add.staticGroup({
+      classType: Bump,
+    })
+    const bumpsPos = this.levelData.bumps || []
+    for (let i = 0; i < bumpsPos.length; i++) {
+      this.addBump(bumpsPos[i])
+    }
+
+    // Cannons
     this.cannons = this.physics.add.staticGroup({
       classType: Cannon,
       runChildUpdate: true,
@@ -434,6 +450,8 @@ export default class GameScene extends Phaser.Scene {
       undefined,
       this
     )
+
+    this.bumpsCollider = this.physics.add.overlap(this.player, this.bumps, this.handleBumpJump, undefined, this)
 
     if (this.boss) {
       this.physics.add.collider(this.boss, this.platformsHitbox)
@@ -703,6 +721,14 @@ export default class GameScene extends Phaser.Scene {
         this.enemies.remove(item.object, true, true)
         itemDataGroup = this.levelData.enemies
         break
+      case EditorType.Bump:
+        this.bumps.remove(item.object, true, true)
+        itemDataGroup = this.levelData.bumps
+        break
+      case EditorType.Coin:
+        this.coins.remove(item.object, true, true)
+        itemDataGroup = this.levelData.coins
+        break
     }
 
     this.itemsMap.delete(key)
@@ -787,6 +813,14 @@ export default class GameScene extends Phaser.Scene {
       this.addEnemy({ x, y, dir })
       this.levelData.enemies = this.levelData.enemies || []
       this.levelData.enemies.push({ x, y, dir })
+    } else if (type === EditorType.Bump) {
+      this.addBump({ x, y })
+      this.levelData.bumps = this.levelData.bumps || []
+      this.levelData.bumps.push({ x, y })
+    } else if (type === EditorType.Coin) {
+      this.addCoin({ x, y })
+      this.levelData.coins = this.levelData.coins || []
+      this.levelData.coins.push({ x, y })
     }
 
     this.currentItem = this.getItemAt(x, y)
@@ -817,7 +851,7 @@ export default class GameScene extends Phaser.Scene {
     await navigator.clipboard.writeText(levelEncoded)
   }
 
-  importLevel(level: DataLevel) {
+  importLevel(level: DataLevel, shouldRestart = true) {
     ;(Object.keys(this.levelData) as (keyof DataLevel)[]).forEach((key) => delete this.levelData[key])
     const platformsCells = convertPlatformsToCells(level.platforms)
     Object.assign(this.levelData, {
@@ -826,11 +860,14 @@ export default class GameScene extends Phaser.Scene {
       ...(level.spikes && { spikes: convertSpikesToCells(level.spikes) }),
       ...(level.fallingBlocks && { fallingBlocks: convertFallingBlocksToCells(level.fallingBlocks) }),
     })
-    this.restartGame()
+
+    if (shouldRestart) {
+      this.restartGame()
+    }
   }
 
   createPlatformsHitbox() {
-    const platforms = this.isCustomLevel ? getPlatformsFromGrid(this.levelData.platforms) : this.levelData.platforms
+    const platforms = getPlatformsFromGrid(this.levelData.platforms)
 
     this.platformsHitbox.clear(true, true)
     platforms.forEach((col) => {
@@ -953,7 +990,7 @@ export default class GameScene extends Phaser.Scene {
     })
     this.audioManager.playSfx(AudioKey.SfxWin)
 
-    if (this.currentLevel && this.currentLevel < NUM_LEVELS && this.currentLevel < Object.keys(levelsData).length) {
+    if (this.currentLevel && this.currentLevel < Object.keys(levelsData).length) {
       unlockLevel(this.currentLevel + 1)
     }
 
@@ -983,6 +1020,7 @@ export default class GameScene extends Phaser.Scene {
     this.targetTrigger.active = false
     this.transformersTriggers.active = false
     this.coinsTriggers.active = false
+    this.bumpsCollider.active = false
     if (this.checkpointTrigger) {
       this.checkpointTrigger.active = false
     }
@@ -1033,18 +1071,29 @@ export default class GameScene extends Phaser.Scene {
       for (let j = 0; j < Math.max(numX, numY); j++) {
         coinIndex++
         if (this.coinsCollected[coinIndex - 1] === 1) continue
-
         const isHorizontal = numX >= numY
+
+        const newX = x + (isHorizontal ? TILE_SIZE * j : 0)
+        const newY = y + (isHorizontal ? 0 : TILE_SIZE * j)
+
         const coin = new Coin(
           this,
-          x + (isHorizontal ? TILE_SIZE * j : 0) + (TILE_SIZE - COIN_SIZE) / 2,
-          y + (isHorizontal ? 0 : TILE_SIZE * j) + (TILE_SIZE - COIN_SIZE) / 2,
+          newX + (TILE_SIZE - COIN_SIZE) / 2,
+          newY + (TILE_SIZE - COIN_SIZE) / 2,
           coinIndex - 1
         )
 
         this.coins.add(coin)
+        this.addMapItem(x, y, { type: EditorType.Coin, object: coin, data: { x: newX, y: newY } })
       }
     }
+  }
+
+  addCoin(data: LevelCoin) {
+    const { x, y } = data
+    const coin = new Coin(this, x + (TILE_SIZE - COIN_SIZE) / 2, y + (TILE_SIZE - COIN_SIZE) / 2, 0)
+    this.coins.add(coin)
+    this.addMapItem(x, y, { type: EditorType.Coin, object: coin, data })
   }
 
   addPlatform(data: LevelPlatform) {
@@ -1059,6 +1108,13 @@ export default class GameScene extends Phaser.Scene {
     const cannon = new Cannon(this, x, y, dir, this.fireballs, this.isCustomLevel && !this.isCustomLevelRun)
     this.cannons.add(cannon)
     this.addMapItem(x, y, { type: EditorType.Cannon, object: cannon, data })
+  }
+
+  addBump(data: LevelBump) {
+    const { x, y } = data
+    const bump = new Bump(this, x, y)
+    this.bumps.add(bump)
+    this.addMapItem(x, y, { type: EditorType.Bump, object: bump, data })
   }
 
   addMapItem(x: number, y: number, item: EditorItem) {
@@ -1205,7 +1261,10 @@ export default class GameScene extends Phaser.Scene {
     this.coinsEmitter.explode(8)
     this.events.emit(EventKey.CollectCoin)
     this.audioManager.playSfx(AudioKey.SfxCoin)
-    this.coinsCollected[coin.collectedIndex] = 1
+
+    if (!this.isCustomLevel) {
+      this.coinsCollected[coin.collectedIndex] = 1
+    }
 
     this.trackDesign(AnalyticsKey.CoinCollected)
 
@@ -1217,7 +1276,7 @@ export default class GameScene extends Phaser.Scene {
     if (hasCollidedFromAbove && this.boss!.isHittable) {
       // Boss hit
       this.boss!.hit()
-      this.player.jumpOffEnemy(BOSS_BOUNCE_VELOCITY)
+      this.player.jumpOffObstacle(BOSS_BOUNCE_VELOCITY)
 
       if (!this.boss!.isDead) {
         this.toggleOneWayPlatforms()
@@ -1241,6 +1300,12 @@ export default class GameScene extends Phaser.Scene {
     })
   }
 
+  handleBumpJump: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback = (_: any, object: any) => {
+    const bump = object as Bump
+    bump.disappear()
+    this.player.jumpOffObstacle(BUMP_OFF_VELOCITY)
+  }
+
   handleEnemiesCollision: Phaser.Types.Physics.Arcade.ArcadePhysicsCallback = (_: any, object: any) => {
     const enemy = object as Phaser.GameObjects.Sprite
     if (this.player.isDead || enemy.getData('isDead')) return
@@ -1260,7 +1325,7 @@ export default class GameScene extends Phaser.Scene {
         },
       })
 
-      this.player.jumpOffEnemy()
+      this.player.jumpOffObstacle()
 
       // Analytics
       this.trackDesign(AnalyticsKey.EnemyKilled)
@@ -1275,7 +1340,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.isCustomLevel || !this.currentLevel) {
       return
     }
-    addProgressionEvent(type, 1, this.currentLevel)
+    addProgressionEvent(type, Math.ceil(this.currentLevel / NUM_LEVELS_BY_WORLD), this.currentLevel)
   }
 
   trackDesign(name: AnalyticsKey) {

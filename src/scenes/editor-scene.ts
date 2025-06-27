@@ -105,23 +105,23 @@ export default class EditorScene extends Phaser.Scene {
     } as EditorModeButtons
     this.selectMode(EditorMode.Move)
 
-    const btnBobby = new IconButton(this, 80, 80, IconsKey.Bobby, () => {
+    const btnBobby = new IconButton(this, 180, 80, IconsKey.Bobby, () => {
       this.selectType(EditorType.Bobby)
     })
-    const btnTarget = new IconButton(this, 80, 180, IconsKey.Target, () => {
+    const btnTarget = new IconButton(this, 180, 180, IconsKey.Target, () => {
       this.selectType(EditorType.Target)
     })
-    const btnPlatform = new IconButton(this, 80, 280, IconsKey.Platform, () => {
+    const btnPlatform = new IconButton(this, 80, 80, IconsKey.Platform, () => {
       this.selectType(EditorType.Platform)
     })
     btnPlatform.isSelected = true
-    const btnOneWayPlatform = new IconButton(this, 80, 380, IconsKey.OneWayPlatform, () => {
+    const btnOneWayPlatform = new IconButton(this, 80, 180, IconsKey.OneWayPlatform, () => {
       this.selectType(EditorType.OneWayPlatform)
     })
-    const btnFallingBlock = new IconButton(this, 80, 480, IconsKey.FallingBlock, () => {
+    const btnFallingBlock = new IconButton(this, 80, 280, IconsKey.FallingBlock, () => {
       this.selectType(EditorType.FallingBlock)
     })
-    const btnSpike = new IconButton(this, 80, 580, IconsKey.Spike, () => {
+    const btnSpike = new IconButton(this, 80, 380, IconsKey.Spike, () => {
       if (this.type === EditorType.Spike) {
         this.spikeDir = (this.spikeDir + 1) % 4
         btnSpike.rotateIcon()
@@ -129,10 +129,10 @@ export default class EditorScene extends Phaser.Scene {
         this.selectType(EditorType.Spike)
       }
     })
-    const btnSpikyBall = new IconButton(this, 80, 680, IconsKey.SpikyBall, () => {
+    const btnSpikyBall = new IconButton(this, 80, 480, IconsKey.SpikyBall, () => {
       this.selectType(EditorType.SpikyBall)
     })
-    const btnCannon = new IconButton(this, 80, 780, IconsKey.Cannon, () => {
+    const btnCannon = new IconButton(this, 80, 580, IconsKey.Cannon, () => {
       if (this.type === EditorType.Cannon) {
         this.cannonDir = (this.cannonDir + 1) % 4
         btnCannon.rotateIcon()
@@ -140,8 +140,16 @@ export default class EditorScene extends Phaser.Scene {
         this.selectType(EditorType.Cannon)
       }
     })
-    const btnEnemy = new IconButton(this, 80, 880, IconsKey.Enemy, () => {
+    const btnEnemy = new IconButton(this, 80, 680, IconsKey.Enemy, () => {
       this.selectType(EditorType.Enemy)
+    })
+
+    const btnBump = new IconButton(this, 80, 780, IconsKey.Bump, () => {
+      this.selectType(EditorType.Bump)
+    })
+
+    const btnCoin = new IconButton(this, 80, 880, IconsKey.Coin, () => {
+      this.selectType(EditorType.Coin)
     })
 
     this.typeButtons = {
@@ -179,6 +187,12 @@ export default class EditorScene extends Phaser.Scene {
       },
       [EditorType.Enemy]: {
         btn: btnEnemy,
+      },
+      [EditorType.Bump]: {
+        btn: btnBump,
+      },
+      [EditorType.Coin]: {
+        btn: btnCoin,
       },
     } as EditorTypeButtons
 
@@ -266,6 +280,8 @@ export default class EditorScene extends Phaser.Scene {
       btnSpikyBall,
       btnCannon,
       btnEnemy,
+      btnBump,
+      btnCoin,
       btnExport,
       btnImport,
       this.toolButtonsPanel,

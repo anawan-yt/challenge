@@ -1,21 +1,38 @@
 import AudioKey from '../consts/audio-key'
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
-import { NUM_LEVELS } from '../consts/globals'
+import { NUM_LEVELS_BY_WORLD } from '../consts/globals'
 import { GameMode } from '../consts/level'
 import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
 import IconButton from '../objects/ui/icon-button'
 import TextButton from '../objects/ui/text-button'
-import { getLevelInfo, getLevelTotalCoins } from '../utils/level'
+import { getCurrentWorld, getLevelInfo, getLevelTotalCoins, setCurrentWorld } from '../utils/level'
 import { stringifyTime } from '../utils/time'
 import { transitionEventsEmitter } from '../utils/transition'
 import AudioScene from './audio-scene'
 import customLevel from '../levels/custom.json'
+import { levelsData } from '../levels'
+
+export interface LevelsSceneProps {
+  world?: number
+}
 
 export default class LevelsScene extends Phaser.Scene {
+  private currentWorld!: number
+
   constructor() {
     super({ key: SceneKey.Levels })
+  }
+
+  init(data: LevelsSceneProps) {
+    let targetWorld = data.world
+    if (!targetWorld) {
+      targetWorld = getCurrentWorld()
+    } else {
+      setCurrentWorld(targetWorld)
+    }
+    this.currentWorld = targetWorld
   }
 
   create() {
@@ -24,6 +41,14 @@ export default class LevelsScene extends Phaser.Scene {
     this.scene.stop(SceneKey.Editor)
     this.registry.set(DataKey.IsCheckpointActive, false)
     this.registry.set(DataKey.CoinsCollected, false)
+
+    this.add
+      .text(width / 2, 24, `MONDE ${this.currentWorld}`, {
+        fontFamily: TextureKey.FontHeading,
+        fontSize: '96px',
+        color: '#1d2b53',
+      })
+      .setOrigin(0.5, 0)
 
     new IconButton(this, 80, 80, IconsKey.Back, () => this.goToScreen(SceneKey.Intro))
     new TextButton(this, width / 2, height - 120, 'Éditeur de niveaux', () => {
@@ -34,15 +59,28 @@ export default class LevelsScene extends Phaser.Scene {
     const buttonOffset = 96
     const buttonSize = 160
     const buttonsPerCol = 2
-    const buttonsPerRow = Math.ceil(NUM_LEVELS / buttonsPerCol)
+    const buttonsPerRow = Math.ceil(NUM_LEVELS_BY_WORLD / buttonsPerCol)
 
     const totalButtonsWidth = (buttonSize + buttonOffset) * (buttonsPerRow - 1)
     const totalButtonsHeight = (buttonSize + buttonOffset) * (buttonsPerCol - 1)
     const startX = this.cameras.main.centerX - totalButtonsWidth / 2
     const startY = this.cameras.main.centerY - totalButtonsHeight / 2
 
-    for (let i = 0; i < NUM_LEVELS; i++) {
-      const level = i + 1
+    if (this.currentWorld > 1) {
+      new IconButton(this, width / 2 - totalButtonsWidth / 2 - 280, height / 2, IconsKey.Chevron, () =>
+        this.goToWorld(this.currentWorld - 1)
+      ).rotateIcon(180)
+    }
+
+    const maxWorlds = Math.ceil(Object.keys(levelsData).length / NUM_LEVELS_BY_WORLD)
+    if (this.currentWorld < maxWorlds) {
+      new IconButton(this, width / 2 + totalButtonsWidth / 2 + 280, height / 2, IconsKey.Chevron, () =>
+        this.goToWorld(this.currentWorld + 1)
+      )
+    }
+
+    for (let i = 0; i < NUM_LEVELS_BY_WORLD; i++) {
+      const level = i + 1 + (this.currentWorld - 1) * NUM_LEVELS_BY_WORLD
       const col = Math.floor(i / buttonsPerCol)
       const row = i % buttonsPerCol
       const direction = i % 2 ? 1 : -1
@@ -97,5 +135,11 @@ export default class LevelsScene extends Phaser.Scene {
   goToScreen(screen: string, params = {}) {
     transitionEventsEmitter.emit(EventKey.TransitionStart)
     transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(screen, params), this)
+  }
+
+  goToWorld(world: number) {
+    const data: LevelsSceneProps = { world }
+    transitionEventsEmitter.emit(EventKey.TransitionStart)
+    transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.restart(data))
   }
 }

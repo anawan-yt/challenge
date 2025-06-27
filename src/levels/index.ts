@@ -8,6 +8,7 @@ import level5 from './level5.json'
 import level6 from './level6.json'
 import level7 from './level7.json'
 import level8 from './level8.json'
+import level9 from './level9.json'
 
 export const levelsData: DataLevels = {
   level1,
@@ -18,4 +19,5 @@ export const levelsData: DataLevels = {
   level6,
   level7,
   level8,
+  level9,
 }

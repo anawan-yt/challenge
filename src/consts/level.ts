@@ -33,6 +33,7 @@ export interface DataLevel {
   spikyBalls?: LevelSpikyBall[]
   spikes?: LevelSpike[]
   cannons?: LevelCannon[]
+  bumps?: LevelBump[]
   eventBlocks?: LevelEventBlock[]
 }
 
@@ -95,3 +96,5 @@ export interface LevelSpike extends LevelPosition {
 export interface LevelCannon extends LevelPosition {
   dir?: number
 }
+
+export interface LevelBump extends LevelPosition {}

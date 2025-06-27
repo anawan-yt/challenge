@@ -1,4 +1,6 @@
+import Bump from '../objects/bump'
 import Cannon from '../objects/cannon'
+import Coin from '../objects/coin'
 import FallingBlock from '../objects/falling-block'
 import MovingSpikyBall from '../objects/moving-spiky-ball'
 import OneWayPlatform from '../objects/one-way-platform'
@@ -8,7 +10,9 @@ import SpikyBall from '../objects/spiky-ball'
 import IconButton from '../objects/ui/icon-button'
 import NumberChoice from '../objects/ui/number-choice'
 import {
+  LevelBump,
   LevelCannon,
+  LevelCoin,
   LevelEnemy,
   LevelFallingBlock,
   LevelOneWayPlatform,
@@ -35,6 +39,8 @@ export enum EditorType {
   Cannon = 'cannon',
   OneWayPlatform = 'oneWayPlatform',
   Enemy = 'enemy',
+  Bump = 'bump',
+  Coin = 'coin',
 }
 
 export enum EditorTool {
@@ -149,6 +155,14 @@ export interface EditorEnemy
   type: EditorType.Enemy
 }
 
+export interface EditorBump extends EditorItemBase<Bump, LevelBump> {
+  type: EditorType.Bump
+}
+
+export interface EditorCoin extends EditorItemBase<Coin, LevelCoin> {
+  type: EditorType.Coin
+}
+
 export type EditorItem =
   | EditorPlatform
   | EditorSpike
@@ -157,3 +171,5 @@ export type EditorItem =
   | EditorCannon
   | EditorOneWayPlatform
   | EditorEnemy
+  | EditorBump
+  | EditorCoin

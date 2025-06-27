@@ -6,6 +6,8 @@ enum DataKey {
   IsCheckpointActive = 'isCheckpointActive',
   IsCustomLevel = 'isCustomLevel',
   IsCustomLevelRun = 'isCustomLevelRun',
+  UnlockedLevels = 'unlockedLevels',
+  CurrentWorld = 'currentWorld',
 }
 
 export default DataKey

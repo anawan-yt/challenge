@@ -60,6 +60,10 @@ export function convertFallingBlocksToCells(fallingBlocks: LevelFallingBlock[]) 
 }
 
 export function getSpikesFromGrid(cells: LevelSpike[]) {
+  if (cells.some(({ num }) => num && num !== 1)) {
+    return cells
+  }
+
   const remainingObjects = [...(cells || [])].sort((a, b) => {
     if (a.y === b.y) {
       return a.x - b.x
@@ -134,6 +138,10 @@ export function getFallingBlocksFromGrid(cells: LevelFallingBlock[]) {
 }
 
 export function getPlatformsFromGrid(cells: LevelPlatform[]) {
+  if (cells.some(({ width, height }) => width !== TILE_SIZE || height !== TILE_SIZE)) {
+    return cells
+  }
+
   const platforms = [...cells].sort((a, b) => a.x - b.x || a.y - b.y)
   const platformMap = new Map()
   platforms.forEach(({ x, y }) => {

@@ -94,5 +94,6 @@ export default class IntroScene extends Phaser.Scene {
   startGame() {
     transitionEventsEmitter.emit(EventKey.TransitionStart)
     transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(SceneKey.Levels), this)
+    // transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(SceneKey.Game, { number: 9 }))
   }
 }

@@ -237,7 +237,7 @@ export default class Player extends Phaser.GameObjects.Container {
     this.jumpCount = 1
   }
 
-  jumpOffEnemy(velocityY: number = PLAYER_BOUNCE_OFF_VELOCITY) {
+  jumpOffObstacle(velocityY: number = PLAYER_BOUNCE_OFF_VELOCITY) {
     ;(this.body as Phaser.Physics.Arcade.Body).setVelocityY(-velocityY)
     this.jumpCount = 1
     this.isJumping = true

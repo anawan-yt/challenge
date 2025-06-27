@@ -1,3 +1,4 @@
+import DataKey from '../consts/data-key'
 import { DataLevel, PlayerDataLevel } from '../consts/level'
 import { levelsData } from '../levels'
 
@@ -7,7 +8,7 @@ export function getLevelTotalCoins(level: number | DataLevel) {
 }
 
 export function getUnlockedLevels(): PlayerDataLevel[] {
-  const unlockedLevelsString = localStorage.getItem('unlockedLevels')
+  const unlockedLevelsString = localStorage.getItem(DataKey.UnlockedLevels)
   if (unlockedLevelsString) {
     return JSON.parse(unlockedLevelsString)
   } else {
@@ -15,7 +16,7 @@ export function getUnlockedLevels(): PlayerDataLevel[] {
       level: 1,
       time: 0,
     }
-    localStorage.setItem('unlockedLevels', JSON.stringify([level]))
+    localStorage.setItem(DataKey.UnlockedLevels, JSON.stringify([level]))
     return [level]
   }
 }
@@ -31,7 +32,7 @@ export function updateLevelInfo(levelNum: number, data: Partial<PlayerDataLevel>
   if (index === -1) return
 
   unlockedLevels[index] = { ...unlockedLevels[index], ...data }
-  localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+  localStorage.setItem(DataKey.UnlockedLevels, JSON.stringify(unlockedLevels))
 }
 
 export function unlockLevel(levelNum: number, time = 0) {
@@ -42,7 +43,7 @@ export function unlockLevel(levelNum: number, time = 0) {
     level: levelNum,
     time,
   })
-  localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+  localStorage.setItem(DataKey.UnlockedLevels, JSON.stringify(unlockedLevels))
 }
 
 export function unlockAllLevels() {
@@ -54,11 +55,19 @@ export function unlockAllLevels() {
     }
   }
 
-  localStorage.setItem('unlockedLevels', JSON.stringify(unlockedLevels))
+  localStorage.setItem(DataKey.UnlockedLevels, JSON.stringify(unlockedLevels))
 }
 
 export function resetBestTimes() {
   const unlockedLevels = getUnlockedLevels()
   const resetTimesLevels = unlockedLevels.map((level) => ({ ...level, time: 0 }))
-  localStorage.setItem('unlockedLevels', JSON.stringify(resetTimesLevels))
+  localStorage.setItem(DataKey.UnlockedLevels, JSON.stringify(resetTimesLevels))
+}
+
+export function setCurrentWorld(world: number) {
+  localStorage.setItem(DataKey.CurrentWorld, world.toString())
+}
+
+export function getCurrentWorld() {
+  return parseInt(localStorage.getItem(DataKey.CurrentWorld) ?? '1', 10)
 }
