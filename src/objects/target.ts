@@ -4,7 +4,7 @@ const bodyRadius = 80
 export default class Target extends Phaser.GameObjects.Arc {
   private emitter: Phaser.GameObjects.Particles.ParticleEmitter
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 40, 0, 360, false, 0x1d2b53)
+    super(scene, x, y, 40, 0, 360, false, 0x262b44)
     this.emitter = scene.add.particles(x, y, TextureKey.Particle, {
       speed: { min: -200, max: 200 },
       angle: { min: 0, max: 360 },

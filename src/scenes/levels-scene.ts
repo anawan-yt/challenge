@@ -2,7 +2,7 @@ import AudioKey from '../consts/audio-key'
 import DataKey from '../consts/data-key'
 import EventKey from '../consts/event-key'
 import { NUM_LEVELS_BY_WORLD } from '../consts/globals'
-import { GameMode } from '../consts/level'
+import { GameMode, WORLD_THEMES, WorldTheme } from '../consts/level'
 import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
 import IconButton from '../objects/ui/icon-button'
@@ -13,6 +13,7 @@ import { transitionEventsEmitter } from '../utils/transition'
 import AudioScene from './audio-scene'
 import customLevel from '../levels/custom.json'
 import { levelsData } from '../levels'
+import BackgroundScene from './background-scene'
 
 export interface LevelsSceneProps {
   world?: number
@@ -20,6 +21,7 @@ export interface LevelsSceneProps {
 
 export default class LevelsScene extends Phaser.Scene {
   private currentWorld!: number
+  private theme!: WorldTheme
 
   constructor() {
     super({ key: SceneKey.Levels })
@@ -33,6 +35,8 @@ export default class LevelsScene extends Phaser.Scene {
       setCurrentWorld(targetWorld)
     }
     this.currentWorld = targetWorld
+    this.theme = WORLD_THEMES[this.currentWorld - 1]
+    ;(this.scene.get(SceneKey.Background) as BackgroundScene).changeBackground(this.theme)
   }
 
   create() {
@@ -46,7 +50,7 @@ export default class LevelsScene extends Phaser.Scene {
       .text(width / 2, 24, `MONDE ${this.currentWorld}`, {
         fontFamily: TextureKey.FontHeading,
         fontSize: '96px',
-        color: '#1d2b53',
+        color: '#' + this.theme.button.toString(16).padStart(6, '0'),
       })
       .setOrigin(0.5, 0)
 
@@ -89,7 +93,7 @@ export default class LevelsScene extends Phaser.Scene {
       const y = startY + row * (buttonSize + buttonOffset) - ((buttonSize + buttonOffset) / 4) * direction
       const timePosY = y + buttonSize * direction
 
-      const button = this.add.rectangle(x, y, buttonSize, buttonSize, 0x1d2b53)
+      const button = this.add.rectangle(x, y, buttonSize, buttonSize, this.theme.button)
 
       const levelInfo = getLevelInfo(level)
       button.rotation = Phaser.Math.DegToRad(45)
@@ -111,7 +115,7 @@ export default class LevelsScene extends Phaser.Scene {
         this.add
           .text(x, timePosY, time ? stringifyTime(time) : '10\'00"00', {
             fontFamily: TextureKey.FontBody,
-            color: '#1d2b53',
+            color: '#262b44',
             fontSize: '32px',
           })
           .setOrigin(0.5)
@@ -125,7 +129,7 @@ export default class LevelsScene extends Phaser.Scene {
       const coins = (levelInfo && levelInfo.coins) || 0
       const levelTotalCoins = getLevelTotalCoins(level)
       if (coins > 0 && coins === levelTotalCoins) {
-        this.add.circle(x, y + 48, 8, levelInfo?.shinyCoin ? 0xffec27 : 0xffa300)
+        this.add.circle(x, y + 48, 8, levelInfo?.shinyCoin ? 0xfee761 : 0xf77622)
       }
     }
 
@@ -134,7 +138,14 @@ export default class LevelsScene extends Phaser.Scene {
 
   goToScreen(screen: string, params = {}) {
     transitionEventsEmitter.emit(EventKey.TransitionStart)
-    transitionEventsEmitter.once(EventKey.TransitionEnd, () => this.scene.start(screen, params), this)
+    transitionEventsEmitter.once(
+      EventKey.TransitionEnd,
+      () => {
+        ;(this.scene.get(SceneKey.Background) as BackgroundScene).reset()
+        this.scene.start(screen, params)
+      },
+      this
+    )
   }
 
   goToWorld(world: number) {

@@ -41,7 +41,7 @@ export default class NumberChoice extends Phaser.GameObjects.Container {
     const graphics = scene.add.graphics()
     graphics.fillStyle(0xffffff, 1)
     graphics.fillRect(bgX, bgY, bgWidth, bgHeight)
-    graphics.lineStyle(4, 0x000000, 1)
+    graphics.lineStyle(4, 0x181425, 1)
     graphics.strokeRect(bgX, bgY, bgWidth, bgHeight)
 
     const plus = new IconButton(scene, TILE_SIZE * 2 - 6, 0, IconsKey.Plus, () => {
@@ -53,7 +53,7 @@ export default class NumberChoice extends Phaser.GameObjects.Container {
       .text(TILE_SIZE - 2, 8, this._value.toString(), {
         fontFamily: TextureKey.FontBody,
         fontSize: '32px',
-        color: '#000000',
+        color: '#181425',
       })
       .setOrigin(0.5)
 
@@ -61,7 +61,7 @@ export default class NumberChoice extends Phaser.GameObjects.Container {
       .text(TILE_SIZE - 2, -40, title, {
         fontFamily: TextureKey.FontBody,
         fontSize: '24px',
-        color: '#000000',
+        color: '#181425',
       })
       .setOrigin(0.5)
 

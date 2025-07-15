@@ -11,7 +11,7 @@ export default class Transformer extends Phaser.GameObjects.Rectangle {
     mode: string,
     group: Phaser.Physics.Arcade.StaticGroup
   ) {
-    super(scene, x, y, width, height, 0x83769c)
+    super(scene, x, y, width, height, 0x5a6988)
     this.setOrigin(0)
 
     const emitter = scene.add.particles(x, y, TextureKey.ParticleTransformer, {
@@ -36,7 +36,7 @@ export default class Transformer extends Phaser.GameObjects.Rectangle {
     const hitboxBeforeX = isHorizontal ? x : x + TILE_SIZE / 2 + width
     const hitboxBeforeY = isHorizontal ? y - TILE_SIZE / 2 : y
     const hitboxBefore = scene.add
-      .rectangle(hitboxBeforeX, hitboxBeforeY, hitboxWidth, hitboxHeight, 0x83769c, 0)
+      .rectangle(hitboxBeforeX, hitboxBeforeY, hitboxWidth, hitboxHeight, 0x68386c, 0)
       .setOrigin(0)
     hitboxBefore.setData('mode', mode)
     group.add(hitboxBefore)
@@ -44,7 +44,7 @@ export default class Transformer extends Phaser.GameObjects.Rectangle {
     const hitboxAfterX = isHorizontal ? x : x - TILE_SIZE / 2
     const hitboxAfterY = isHorizontal ? y + TILE_SIZE / 2 + height : y
     const hitboxAfter = scene.add
-      .rectangle(hitboxAfterX, hitboxAfterY, hitboxWidth, hitboxHeight, 0x83769c, 0)
+      .rectangle(hitboxAfterX, hitboxAfterY, hitboxWidth, hitboxHeight, 0x68386c, 0)
       .setOrigin(0)
     hitboxAfter.setData('mode', mode === PlayerMode.Platformer ? PlayerMode.Flappy : PlayerMode.Platformer)
     group.add(hitboxAfter)

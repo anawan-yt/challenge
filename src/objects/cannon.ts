@@ -27,7 +27,7 @@ export default class Cannon extends Phaser.GameObjects.Rectangle {
     fireballs: Phaser.Physics.Arcade.Group,
     showDir: boolean = false
   ) {
-    super(scene, x, y, TILE_SIZE, TILE_SIZE, 0x1d2b53)
+    super(scene, x, y, TILE_SIZE, TILE_SIZE, 0x262b44)
     this.setOrigin(0)
     this.setDepth(DepthLayer.Cannon)
     this._dir = dir

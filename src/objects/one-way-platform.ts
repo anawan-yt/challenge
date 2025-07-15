@@ -20,7 +20,7 @@ export default class OneWayPlatform extends Phaser.GameObjects.Rectangle {
   }
 
   constructor(scene: Phaser.Scene, x: number, y: number, width: number, points?: LevelPosition[]) {
-    super(scene, x, y, width, TILE_SIZE / 2, 0xffccaa)
+    super(scene, x, y, width, TILE_SIZE / 2, 0xe8b796)
     this.setOrigin(0)
     scene.physics.add.existing(this)
     const body = this.body as Phaser.Physics.Arcade.Body

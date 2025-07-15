@@ -23,6 +23,8 @@ export const BOSS_BOUNCE_VELOCITY = 1200
 export const CINEMATIC_FRAME_HEIGHT = 120
 export const BUMP_OFF_VELOCITY = 1200
 export const BUMP_DISABLE_DURATION = 2000
+export const LAVA_BALL_DELAY = 3000
+export const LAVA_BALL_VELOCITY = -2000
 
 export enum DepthLayer {
   Fireball,

@@ -18,10 +18,15 @@ import {
   LevelEnemy,
   LevelEventBlock,
   LevelFallingBlock,
+  LevelLava,
+  LevelLavaBall,
   LevelOneWayPlatform,
   LevelPlatform,
   LevelSpike,
   LevelSpikyBall,
+  Theme,
+  THEME_DATA,
+  ThemeColors,
 } from '../consts/level'
 import SceneKey from '../consts/scene-key'
 import TextureKey, { IconsKey } from '../consts/texture-key'
@@ -69,12 +74,16 @@ import {
   getOneWayPlatformsFromGrid,
 } from '../utils/editor'
 import Bump from '../objects/bump'
+import Lava from '../objects/lava'
+import LavaBall from '../objects/lava-ball'
 
 interface Keys {
   [key: string]: { isDown: boolean }
 }
 
 export default class GameScene extends Phaser.Scene {
+  private theme!: Theme
+  private themeColors!: ThemeColors
   private currentLevel: number | null = null
   private levelData!: DataLevel
   private _canMove = false
@@ -91,10 +100,11 @@ export default class GameScene extends Phaser.Scene {
   private isTransitionning = false
   private worldWidth!: number
   private worldHeight!: number
-  private hills!: Phaser.GameObjects.Group
-  private hills2!: Phaser.GameObjects.Group
-  private clouds!: Phaser.Physics.Arcade.Group
+  private background!: Phaser.GameObjects.TileSprite
+  private background2!: Phaser.GameObjects.TileSprite
   private platforms!: Phaser.GameObjects.Group
+  private lava!: Phaser.Physics.Arcade.StaticGroup
+  private lavaballs!: Phaser.Physics.Arcade.Group
   private platformsHitbox!: Phaser.Physics.Arcade.StaticGroup
   private spikes!: Phaser.Physics.Arcade.StaticGroup
   private spikyBalls!: Phaser.Physics.Arcade.Group
@@ -185,6 +195,8 @@ export default class GameScene extends Phaser.Scene {
     this.scene.stop(SceneKey.Editor)
     this.itemsMap = new Map()
     this.isCustomLevelRun = data.isCustomLevelRun ?? false
+    this.theme = this.levelData.theme || Theme.Forest
+    this.themeColors = THEME_DATA[this.theme]
     this.registry.set(DataKey.IsCustomLevel, this.isCustomLevel)
     this.registry.set(DataKey.IsCustomLevelRun, this.isCustomLevelRun)
   }
@@ -215,37 +227,19 @@ export default class GameScene extends Phaser.Scene {
     this.worldHeight = this.levelData.world.height
     this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight)
 
-    this.add.rectangle(0, 0, this.worldWidth, this.worldHeight, 0x29adff).setOrigin(0)
+    this.add.rectangle(0, 0, this.worldWidth, this.worldHeight, this.themeColors.background).setOrigin(0)
 
-    const hillsPos = this.levelData.hills ?? []
-    this.hills = this.add.group()
-    for (let i = 0; i < hillsPos.length; i++) {
-      let hill = this.hills.create(hillsPos[i].x, hillsPos[i].y, TextureKey.Hill)
-      hill.setOrigin(0)
-      hill.setScrollFactor(0.3)
-    }
+    this.background2 = this.add
+      .tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, this.themeColors.parallax2)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setAlpha(this.isCustomLevel && !this.isCustomLevelRun ? 0 : 1)
 
-    const hillsPos2 = this.levelData.hillsFront ?? []
-    this.hills2 = this.add.group()
-    for (let i = 0; i < hillsPos2.length; i++) {
-      let hill = this.hills2.create(hillsPos2[i].x, hillsPos2[i].y, TextureKey.Hill2)
-      hill.setOrigin(0)
-      hill.setScrollFactor(0.4)
-    }
-
-    const cloudsPos = this.levelData.clouds?.x ?? []
-    this.clouds = this.physics.add.group({
-      allowGravity: false,
-    })
-    for (let i = 0; i < cloudsPos.length; i++) {
-      let cloud = this.clouds.create(
-        cloudsPos[i],
-        Phaser.Math.Between(this.levelData.clouds!.y.min, this.levelData.clouds!.y.max),
-        TextureKey.Cloud
-      )
-      cloud.setVelocityX(Phaser.Math.Between(10, 20))
-      cloud.setAlpha(Phaser.Math.FloatBetween(0.2, 0.8))
-    }
+    this.background = this.add
+      .tileSprite(0, 0, this.cameras.main.width, this.cameras.main.height, this.themeColors.parallax)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setAlpha(this.isCustomLevel && !this.isCustomLevelRun ? 0 : 1)
 
     // Boss
     if (this.levelData.isBoss) {
@@ -310,6 +304,25 @@ export default class GameScene extends Phaser.Scene {
       this.addSpikes(spikesPos[i])
     }
 
+    // Boules de lave
+    this.lavaballs = this.physics.add.group({
+      classType: LavaBall,
+      runChildUpdate: true,
+    })
+    const lavaballsPos = this.levelData.lavaBalls || []
+    for (let i = 0; i < lavaballsPos.length; i++) {
+      this.addLavaball(lavaballsPos[i])
+    }
+
+    // Lave
+    this.lava = this.physics.add.staticGroup({
+      classType: Lava,
+    })
+    const lavaPos = this.levelData.lava || []
+    for (let i = 0; i < lavaPos.length; i++) {
+      this.addLava(lavaPos[i])
+    }
+
     this.spikyBalls = this.physics.add.group({
       allowGravity: false,
       immovable: true,
@@ -358,9 +371,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Checkpoint
     if (this.levelData.checkpoint && !this.isSpeedrunMode) {
-      const pole = this.add.rectangle(0, 0, 20, 240, 0xc2c3c7)
+      const pole = this.add.rectangle(0, 0, 20, 240, 0xc0cbdc)
       this.checkpointFlag = this.add
-        .triangle(90, pole.height / 2 - 8 - (this.isCheckpointActive ? 120 : 0), 0, -40, 80, 0, 0, 40, 0xffa300)
+        .triangle(90, pole.height / 2 - 8 - (this.isCheckpointActive ? 120 : 0), 0, -40, 80, 0, 0, 40, 0xf77622)
         .setOrigin(1, 0.5)
       this.checkpoint = this.add.container(this.levelData.checkpoint.x, this.levelData.checkpoint.y, [
         pole,
@@ -393,7 +406,7 @@ export default class GameScene extends Phaser.Scene {
       this.levelData.player.y,
       TILE_SIZE,
       TILE_SIZE,
-      0xfff1e8,
+      0xffffff,
       0
     )
     this.physics.add.existing(this.playerShadowHitbox, true)
@@ -410,7 +423,9 @@ export default class GameScene extends Phaser.Scene {
 
     // Mort du joueur
     this.physics.add.overlap(this.player, this.spikes, this.die, undefined, this)
+    this.physics.add.overlap(this.player, this.lava, this.die, undefined, this)
     this.physics.add.overlap(this.player, this.fireballs, this.die, undefined, this)
+    this.physics.add.overlap(this.player, this.lavaballs, this.die, undefined, this)
     this.physics.add.overlap(this.player, this.spikyBalls, this.die, undefined, this)
     this.enemiesCollider = this.physics.add.overlap(
       this.enemies,
@@ -552,6 +567,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
+    this.background.tilePositionX = this.cameras.main.scrollX * 0.4
+    this.background2.tilePositionX = this.cameras.main.scrollX * 0.3
+
     const justTriggeredJump =
       Phaser.Input.Keyboard.JustDown(this.zKey) ||
       Phaser.Input.Keyboard.JustDown(this.upKey) ||
@@ -587,14 +605,6 @@ export default class GameScene extends Phaser.Scene {
       })
 
     this.boss?.update()
-
-    // Reset des nuages
-    this.clouds.getChildren().forEach((object) => {
-      const cloud = object as Phaser.GameObjects.Sprite
-      if (cloud.x > this.physics.world.bounds.width) {
-        cloud.x = -120
-      }
-    })
 
     // Plateformes mobiles
     this.handleMovingPlatforms(time, delta)
@@ -847,6 +857,7 @@ export default class GameScene extends Phaser.Scene {
         fallingBlocks: getFallingBlocksFromGrid(this.levelData.fallingBlocks),
       }),
     }
+
     const levelEncoded = btoa(JSON.stringify(levelData))
     await navigator.clipboard.writeText(levelEncoded)
   }
@@ -872,7 +883,7 @@ export default class GameScene extends Phaser.Scene {
     this.platformsHitbox.clear(true, true)
     platforms.forEach((col) => {
       const { x, y, width, height } = col
-      const platform = this.add.rectangle(x, y, width, height, 0xab5236, 0).setOrigin(0)
+      const platform = this.add.rectangle(x, y, width, height, 0xbe4a2f, 0).setOrigin(0)
       this.platformsHitbox.add(platform)
     })
   }
@@ -1098,9 +1109,35 @@ export default class GameScene extends Phaser.Scene {
 
   addPlatform(data: LevelPlatform) {
     const { x, y, width, height } = data
-    const platform = new Platform(this, x, y, width, height)
+    const platform = new Platform(this, x, y, width, height, this.themeColors.platform)
     this.platforms.add(platform)
     this.addMapItem(x, y, { type: EditorType.Platform, object: platform, data })
+  }
+
+  addLavaball(data: LevelLavaBall) {
+    const { x, y } = data
+    const ball = new LavaBall(this, x, y)
+    this.lavaballs.add(ball)
+  }
+
+  addLava(data: LevelLava) {
+    const { x, y, width, height } = data
+    const lava = new Lava(this, x, y, width, height)
+    this.lava.add(lava)
+
+    const emitter = this.add.particles(x, y, TextureKey.ParticleLava, {
+      speed: { min: -40, max: 40 },
+      scale: { min: 0.6, max: 1 },
+      alpha: { start: 1, end: 0 },
+      lifespan: 1000,
+      frequency: 100,
+      quantity: 5,
+    })
+    emitter.addEmitZone({
+      type: 'random',
+      quantity: 5,
+      source: new Phaser.Geom.Rectangle(0, -TILE_SIZE / 2, width, TILE_SIZE),
+    })
   }
 
   addCannon(data: LevelCannon) {
@@ -1186,9 +1223,9 @@ export default class GameScene extends Phaser.Scene {
       enemy = this.add.sprite(x, y, TextureKey.Enemy2).setOrigin(0)
       enemy.setData('jumpCount', 0)
     } else {
-      enemy = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0xff004d).setOrigin(0)
+      enemy = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0xff0044).setOrigin(0)
       if (this.isCustomLevel && !this.isCustomLevelRun) {
-        const startPos = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0xff004d).setOrigin(0).setAlpha(0.25)
+        const startPos = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, 0xff0044).setOrigin(0).setAlpha(0.25)
         enemy.setData('placeholder', startPos)
         this.enemiesStartPos.add(startPos)
       }

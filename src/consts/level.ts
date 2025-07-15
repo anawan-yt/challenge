@@ -1,3 +1,5 @@
+import TextureKey from './texture-key'
+
 export enum GameMode {
   Classic = 'classic',
   Speedrun = 'speedrun',
@@ -15,16 +17,16 @@ export interface DataLevels {
 }
 
 export interface DataLevel {
+  theme?: Theme
   isBoss?: boolean
   bossTrigger?: BossTrigger
   world: LevelSize
   player: LevelPosition
   target: LevelPosition
   checkpoint?: LevelPosition
-  hills?: LevelPosition[]
-  hillsFront?: LevelPosition[]
-  clouds?: LevelClouds
   platforms: LevelPlatform[]
+  lava?: LevelLava[]
+  lavaBalls?: LevelLavaBall[]
   oneWayPlatforms?: LevelOneWayPlatform[]
   transformers?: LevelTransformer[]
   fallingBlocks?: LevelFallingBlock[]
@@ -37,6 +39,52 @@ export interface DataLevel {
   eventBlocks?: LevelEventBlock[]
 }
 
+export enum Theme {
+  Forest = 'forest',
+  Volcano = 'volcano',
+}
+
+export interface ThemeColors {
+  background: number
+  platform: number
+  parallax: TextureKey
+  parallax2: TextureKey
+}
+
+export const THEME_DATA: Record<Theme, ThemeColors> = {
+  [Theme.Forest]: {
+    background: 0x0099db,
+    platform: 0xbe4a2f,
+    parallax: TextureKey.Hill,
+    parallax2: TextureKey.Hill2,
+  },
+  [Theme.Volcano]: {
+    background: 0xbe4a2f,
+    platform: 0xa22633,
+    parallax: TextureKey.Volcanos,
+    parallax2: TextureKey.Volcanos2,
+  },
+}
+
+export interface WorldTheme {
+  gridTexture: TextureKey
+  dir: Phaser.Math.Vector2
+  button: number
+}
+
+export const WORLD_THEMES: Array<WorldTheme> = [
+  {
+    gridTexture: TextureKey.Grid,
+    dir: new Phaser.Math.Vector2(0.5, 0.5),
+    button: 0x262b44,
+  },
+  {
+    gridTexture: TextureKey.Grid2,
+    dir: new Phaser.Math.Vector2(0, -0.5),
+    button: 0x3e2731,
+  },
+]
+
 export interface LevelPosition {
   x: number
   y: number
@@ -47,15 +95,8 @@ export interface LevelSize {
   height: number
 }
 
-export interface LevelClouds {
-  y: {
-    min: number
-    max: number
-  }
-  x: number[]
-}
-
 export interface LevelPlatform extends LevelPosition, LevelSize {}
+export interface LevelLava extends LevelPosition, LevelSize {}
 export interface LevelItem extends LevelPosition, LevelSize {}
 export interface BossTrigger extends LevelPosition, LevelSize {}
 export interface LevelEventBlock extends LevelPosition, Partial<LevelSize> {}
@@ -98,3 +139,4 @@ export interface LevelCannon extends LevelPosition {
 }
 
 export interface LevelBump extends LevelPosition {}
+export interface LevelLavaBall extends LevelPosition {}

@@ -24,7 +24,7 @@ export default class IntroScene extends Phaser.Scene {
         960,
         920,
         `${this.sys.game.device.os.desktop ? "Appuie sur la touche 'ESPACE'" : "Touche l'écran"} pour commencer`,
-        { fontFamily: TextureKey.FontHeading, fontSize: '48px', color: '#1d2b53' }
+        { fontFamily: TextureKey.FontHeading, fontSize: '48px', color: '#262b44' }
       )
       .setOrigin(0.5, 0.5)
 
@@ -49,7 +49,7 @@ export default class IntroScene extends Phaser.Scene {
       .text(960, 480, 'Hey \nBobby!', {
         fontFamily: TextureKey.FontHeading,
         fontSize: '200px',
-        color: '#1d2b53',
+        color: '#262b44',
         align: 'center',
         lineSpacing: -40,
       })

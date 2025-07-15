@@ -482,7 +482,7 @@ export default class EditorScene extends Phaser.Scene {
       rows: height / TILE_SIZE,
     }
 
-    this.rectGraphics.fillStyle(0xc2c3c7, 0.5)
+    this.rectGraphics.fillStyle(0xc0cbdc, 0.5)
     this.rectGraphics.fillRect(
       startPosX - this.gameCamera.scrollX + (width < 0 ? TILE_SIZE : 0),
       startPosY - this.gameCamera.scrollY + (height < 0 ? TILE_SIZE : 0),

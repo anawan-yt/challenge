@@ -15,7 +15,7 @@ export const GameConfig: Phaser.Types.Core.GameConfig = {
   version: '0.0.16',
   parent: 'game',
   type: Phaser.AUTO,
-  backgroundColor: '#29ADFF',
+  backgroundColor: '#0099db',
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

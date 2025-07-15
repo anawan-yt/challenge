@@ -2,28 +2,21 @@
   "isBoss": true,
   "bossTrigger": { "x": 1200, "y": 800, "width": 400, "height": 80 },
   "world": { "width": 4800, "height": 2400 },
-  "player": { "x": 720, "y": 480 },
-  "target": { "x": 4000, "y": 1120 },
-  "clouds": { "y": { "min": 200, "max": 320 }, "x": [-100, 300, 900, 2000] },
-  "hills": [
-    { "x": 600, "y": 400 },
-    { "x": 1000, "y": 320 }
-  ],
-  "hillsFront": [
-    { "x": 0, "y": 720 },
-    { "x": 1000, "y": 840 }
-  ],
+  "player": { "x": 760, "y": 440 },
+  "target": { "x": 3960, "y": 1160 },
   "platforms": [
-    { "x": 0, "y": 0, "width": 400, "height": 2000 },
+    { "x": 0, "y": 0, "width": 400, "height": 2400 },
+    { "x": 1920, "y": 0, "width": 2560, "height": 880 },
+    { "x": 4480, "y": 0, "width": 320, "height": 2400 },
     { "x": 400, "y": 640, "width": 800, "height": 240 },
-    { "x": 400, "y": 840, "width": 480, "height": 1160 },
-    { "x": 0, "y": 2080, "width": 4800, "height": 320 },
     { "x": 1600, "y": 640, "width": 320, "height": 240 },
-    { "x": 1920, "y": 0, "width": 2880, "height": 880 },
-    { "x": 0, "y": 2000, "width": 1600, "height": 80 },
-    { "x": 1920, "y": 2000, "width": 400, "height": 80 },
-    { "x": 2640, "y": 2000, "width": 720, "height": 80 },
-    { "x": 3360, "y": 1360, "width": 1440, "height": 1040 }
+    { "x": 400, "y": 840, "width": 480, "height": 1200 },
+    { "x": 3360, "y": 1360, "width": 1120, "height": 1040 },
+    { "x": 400, "y": 2000, "width": 1200, "height": 400 },
+    { "x": 1920, "y": 2000, "width": 400, "height": 400 },
+    { "x": 2640, "y": 2000, "width": 720, "height": 400 },
+    { "x": 1600, "y": 2080, "width": 320, "height": 320 },
+    { "x": 2320, "y": 2080, "width": 320, "height": 320 }
   ],
   "oneWayPlatforms": [
     { "x": 880, "y": 1680, "width": 240 },

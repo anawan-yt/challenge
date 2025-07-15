@@ -14,7 +14,7 @@ export default class PreloaderScene extends Phaser.Scene {
     const graphics = this.make.graphics()
 
     // Particles and other elements
-    graphics.fillStyle(0x000000, 1)
+    graphics.fillStyle(0x181425, 1)
     graphics.fillRect(0, 0, 20, 20)
     graphics.generateTexture(TextureKey.Particle, 20, 20)
     graphics.clear()
@@ -24,22 +24,27 @@ export default class PreloaderScene extends Phaser.Scene {
     graphics.generateTexture(TextureKey.ParticleTransformer, 20, 20)
     graphics.clear()
 
-    graphics.fillStyle(0xc2c3c7, 1)
+    graphics.fillStyle(0xe43b44, 0.4)
+    graphics.fillRect(0, 0, 20, 20)
+    graphics.generateTexture(TextureKey.ParticleLava, 20, 20)
+    graphics.clear()
+
+    graphics.fillStyle(0xc0cbdc, 1)
     graphics.fillCircle(20, 20, 20)
     graphics.generateTexture(TextureKey.ParticleJump, 40, 40)
     graphics.clear()
 
-    graphics.fillStyle(0xffec27, 1)
+    graphics.fillStyle(0xfee761, 1)
     graphics.fillRect(0, 0, 20, 20)
     graphics.generateTexture(TextureKey.ParticleCoin, 20, 20)
     graphics.clear()
 
-    graphics.fillStyle(0xffa300, 1)
+    graphics.fillStyle(0xf77622, 1)
     graphics.fillCircle(20, 20, 20)
     graphics.generateTexture(TextureKey.Fireball, 40, 40)
     graphics.clear()
 
-    graphics.fillStyle(0xc2c3c7, 1)
+    graphics.fillStyle(0xc0cbdc, 1)
     graphics.beginPath()
     graphics.moveTo(40, 2)
     graphics.lineTo(78, 40)
@@ -47,7 +52,7 @@ export default class PreloaderScene extends Phaser.Scene {
     graphics.lineTo(2, 40)
     graphics.closePath()
     graphics.fillPath()
-    graphics.fillStyle(0x000000, 1)
+    graphics.fillStyle(0x181425, 1)
     graphics.fillCircle(40, 40, 30)
     graphics.generateTexture(TextureKey.SpikyBall, 80, 80)
     graphics.clear()
@@ -79,9 +84,12 @@ export default class PreloaderScene extends Phaser.Scene {
     this.load.image(TextureKey.BtnCursor, 'btn-cursor.png')
     this.load.image(TextureKey.Spike, 'spike.png')
     this.load.image(TextureKey.Enemy2, 'enemy2.png')
-    this.load.image(TextureKey.Hill, 'hill.png')
-    this.load.image(TextureKey.Hill2, 'hill2.png')
+    this.load.image(TextureKey.Hill, 'bg-hills.png')
+    this.load.image(TextureKey.Hill2, 'bg-hills2.png')
+    this.load.image(TextureKey.Volcanos, 'bg-volcanos.png')
+    this.load.image(TextureKey.Volcanos2, 'bg-volcanos2.png')
     this.load.image(TextureKey.Bump, 'bump.png')
+    this.load.image(TextureKey.Grid2, 'grid2.png')
 
     this.load.audio(AudioKey.Music, 'audio/music.mp3')
     this.load.audio(AudioKey.SfxJump, 'audio/sfx-jump.mp3')
@@ -99,12 +107,12 @@ export default class PreloaderScene extends Phaser.Scene {
       .text(width / 2, height / 2 - 48, 'Chargement...', {
         fontFamily: TextureKey.FontHeading,
         fontSize: '48px',
-        color: '#1d2b53',
+        color: '#262b44',
       })
       .setOrigin(0.5, 0.5)
 
     const progressBox = this.add.graphics()
-    progressBox.lineStyle(8, 0x1d2b53)
+    progressBox.lineStyle(8, 0x262b44)
     progressBox.strokeRect(width / 2 - 204, height / 2, 408, 80)
 
     this.progressBar = this.add.graphics()
@@ -120,7 +128,7 @@ export default class PreloaderScene extends Phaser.Scene {
     const [progressWidth, progressHeight] = [400, 76]
 
     this.progressBar.clear()
-    this.progressBar.fillStyle(0x1d2b53, 1)
+    this.progressBar.fillStyle(0x262b44, 1)
     this.progressBar.fillRect(width / 2 - progressWidth / 2, height / 2, progressWidth * val, progressHeight)
   }
 }

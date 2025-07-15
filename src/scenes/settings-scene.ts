@@ -28,7 +28,7 @@ export default class SettingsScene extends Phaser.Scene {
     let centerX = (width - panelWidth) / 2
     this.add.existing(new Panel(this, centerX, 40, panelWidth, 520))
     this.add
-      .text(width / 2, 80, '- Paramètres -', { fontFamily: TextureKey.FontHeading, fontSize: '64px', color: '#000000' })
+      .text(width / 2, 80, '- Paramètres -', { fontFamily: TextureKey.FontHeading, fontSize: '64px', color: '#181425' })
       .setOrigin(0.5, 0)
 
     this.btnMode = new TextButton(this, width / 2 - 260, 260, this.getModeText(), this.handleChangeMode)
@@ -48,20 +48,20 @@ export default class SettingsScene extends Phaser.Scene {
       .text(width / 2, 680, '- Statistiques -', {
         fontFamily: TextureKey.FontHeading,
         fontSize: '64px',
-        color: '#000000',
+        color: '#181425',
       })
       .setOrigin(0.5)
     this.add.text((width - panelWidth) / 2 + 80, 800, `Ennemis tués\nMorts de Bobby\nPièces collectées`, {
       fontFamily: TextureKey.FontBody,
       fontSize: '40px',
-      color: '#000000',
+      color: '#181425',
       lineSpacing: 10,
     })
     this.add
       .text((width + panelWidth) / 2 - 80, 800, `${totalKilled}\n${totalDeath}\n${totalCoins}`, {
         fontFamily: TextureKey.FontBody,
         fontSize: '40px',
-        color: '#000000',
+        color: '#181425',
         align: 'right',
         lineSpacing: 10,
       })

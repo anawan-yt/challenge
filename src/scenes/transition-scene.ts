@@ -15,9 +15,9 @@ export default class TransitionScene extends Phaser.Scene {
     this.scene.bringToTop()
     const { width, height } = this.scale
 
-    this.rect1 = this.add.rectangle(0, this.isOpen ? -height / 2 : 0, width, height / 2, 0x1d2b53)
+    this.rect1 = this.add.rectangle(0, this.isOpen ? -height / 2 : 0, width, height / 2, 0x262b44)
     this.rect1.setOrigin(0, 0)
-    this.rect2 = this.add.rectangle(0, this.isOpen ? height : height / 2, width, height / 2, 0x1d2b53)
+    this.rect2 = this.add.rectangle(0, this.isOpen ? height : height / 2, width, height / 2, 0x262b44)
     this.rect2.setOrigin(0, 0)
 
     transitionEventsEmitter.off(EventKey.TransitionStart, this.startTransition, this)

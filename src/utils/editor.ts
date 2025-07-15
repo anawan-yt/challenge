@@ -9,8 +9,8 @@ export function convertPlatformsToCells(platforms: LevelPlatform[]) {
   const cells: LevelPlatform[] = []
 
   platforms.forEach(({ x, y, width, height }) => {
-    const cols = width / 80
-    const rows = height / 80
+    const cols = width / TILE_SIZE
+    const rows = height / TILE_SIZE
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
@@ -31,8 +31,9 @@ export function convertSpikesToCells(spikes: LevelSpike[]) {
   const cells: LevelSpike[] = []
   spikes.forEach((spike) => {
     const num = spike.num ?? 1
+    const dir = spike.dir ?? 0
+    const isHorizontal = dir === 0 || dir === 2
     for (let i = 0; i < num; i++) {
-      const isHorizontal = spike.dir === 0 || spike.dir === 2
       cells.push({
         x: spike.x + (isHorizontal ? TILE_SIZE * i : 0),
         y: spike.y + (!isHorizontal ? TILE_SIZE * i : 0),
@@ -203,6 +204,10 @@ export function getPlatformsFromGrid(cells: LevelPlatform[]) {
 }
 
 export function getOneWayPlatformsFromGrid(cells: LevelOneWayPlatform[]) {
+  if (cells.some(({ width, points }) => width !== TILE_SIZE || points?.length)) {
+    return cells
+  }
+
   const platforms = [...cells].sort((a, b) => a.y - b.y || a.x - b.x)
   const platformMap = new Map()
   platforms.forEach(({ x, y }) => {

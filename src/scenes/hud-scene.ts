@@ -32,9 +32,9 @@ export default class HUDScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale
 
-    this.cinematicFrameTop = this.add.rectangle(0, -CINEMATIC_FRAME_HEIGHT, width, CINEMATIC_FRAME_HEIGHT, 0x000000)
+    this.cinematicFrameTop = this.add.rectangle(0, -CINEMATIC_FRAME_HEIGHT, width, CINEMATIC_FRAME_HEIGHT, 0x181425)
     this.cinematicFrameTop.setOrigin(0, 0)
-    this.cinematicFrameBottom = this.add.rectangle(0, height, width, CINEMATIC_FRAME_HEIGHT, 0x000000)
+    this.cinematicFrameBottom = this.add.rectangle(0, height, width, CINEMATIC_FRAME_HEIGHT, 0x181425)
     this.cinematicFrameBottom.setOrigin(0, 0)
 
     const mobileCursorsContainer = this.add.container()
@@ -59,7 +59,7 @@ export default class HUDScene extends Phaser.Scene {
       (acc: number, val: number) => acc + val,
       0
     )
-    const coin = this.add.circle(60, 60, 20, 0xffec27)
+    const coin = this.add.circle(60, 60, 20, 0xfee761)
     this.coinsText = this.add.text(92, 34, `x${this.coinsCollected.toString().padStart(2, '0')}`, {
       fontFamily: TextureKey.FontHeading,
       fontSize: '48px',
@@ -70,7 +70,7 @@ export default class HUDScene extends Phaser.Scene {
     const isSpeedrunMode = this.registry.get(DataKey.GameMode) === GameMode.Speedrun
     this.timerStarted = false
     this.startTime = 0
-    const timerBg = this.add.rectangle(0, 100, 320, 80, 0x1d2b53, 0.5).setOrigin(0)
+    const timerBg = this.add.rectangle(0, 100, 320, 80, 0x262b44, 0.5).setOrigin(0)
     this.timerText = this.add.text(40, 110, '00\'00"000', {
       fontFamily: TextureKey.FontHeading,
       fontSize: '48px',
@@ -91,7 +91,7 @@ export default class HUDScene extends Phaser.Scene {
     this.panelPause = this.add.container(0, 0)
     this.panelPause.setVisible(false)
 
-    const panelOverlay = this.add.rectangle(0, 0, width, height, 0x1d2b53, 0.4)
+    const panelOverlay = this.add.rectangle(0, 0, width, height, 0x262b44, 0.4)
     panelOverlay.setOrigin(0).setInteractive()
 
     const panelPauseBg = new Panel(this, centerX, centerY, panelWidth, panelHeight)
@@ -99,7 +99,7 @@ export default class HUDScene extends Phaser.Scene {
       .text(width / 2, centerY + 40, '- Pause -', {
         fontFamily: TextureKey.FontHeading,
         fontSize: '64px',
-        color: '#000000',
+        color: '#181425',
       })
       .setOrigin(0.5, 0)
 

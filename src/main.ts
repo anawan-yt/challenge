@@ -4,7 +4,7 @@ import { GameConfig } from './config'
 import './style.css'
 
 ga.GameAnalytics.setEnabledInfoLog(true)
-ga.GameAnalytics.configureBuild('0.0.19')
+ga.GameAnalytics.configureBuild('0.0.20')
 // ga.GameAnalytics.initialize('xxx', 'xxx')
 
 export default new Phaser.Game(GameConfig)

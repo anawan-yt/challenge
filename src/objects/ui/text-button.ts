@@ -29,7 +29,7 @@ export default class TextButton extends Phaser.GameObjects.Container {
     this.textObject = scene.add.text(0, 0, text, {
       fontFamily: TextureKey.FontBody,
       fontSize: '40px',
-      color: '#000000',
+      color: '#181425',
     })
 
     Phaser.Display.Align.In.Center(this.textObject, this.up)

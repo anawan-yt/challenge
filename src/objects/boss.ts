@@ -26,7 +26,7 @@ export default class Boss extends Phaser.GameObjects.Rectangle {
   }
 
   constructor(scene: Phaser.Scene) {
-    super(scene, startX, startY, 400, 400, 0xff004d)
+    super(scene, startX, startY, 400, 400, 0xff0044)
     scene.physics.world.enable(this)
     scene.add.existing(this)
     this.dir = 1

@@ -8,7 +8,7 @@ export default class Coin extends Phaser.GameObjects.Arc {
   }
 
   constructor(scene: Phaser.Scene, x: number, y: number, collectedIndex: number) {
-    super(scene, x, y, COIN_SIZE / 2, 0, 360, false, 0xffec27)
+    super(scene, x, y, COIN_SIZE / 2, 0, 360, false, 0xfee761)
     this.setOrigin(0)
     this._collectedIndex = collectedIndex
 
